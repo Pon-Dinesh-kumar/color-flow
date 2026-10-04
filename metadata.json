@@ -1,0 +1,6 @@
+{
+  "name": "Color Flow - 3D Puzzle Game",
+  "description": "A polished 3D casual puzzle game. Rotate translucent pipes, guide colored balls from sources into matching target canisters, and solve increasingly intricate flow networks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
