@@ -19,10 +19,10 @@ export const PlayButton: React.FC<PlayButtonProps> = ({ onPlay }) => {
         aria-label="Play Game"
         className="group relative w-full max-w-[240px] h-[64px] rounded-full flex items-center justify-center gap-3 cursor-pointer select-none active:scale-95 transition-transform duration-150 animate-[playBreathe_3.2s_ease-in-out_infinite]"
         style={{
-          background: 'linear-gradient(180deg, #4ade80 0%, #22c55e 45%, #16a34a 100%)',
+          background: 'linear-gradient(180deg, #6bff83 0%, #18eb4b 45%, #00bd38 100%)',
           boxShadow:
-            '0 0 25px rgba(34, 197, 94, 0.55), 0 8px 25px rgba(0, 0, 0, 0.55), inset 0 2px 4px rgba(255, 255, 255, 0.75), inset 0 -3px 6px rgba(21, 128, 61, 0.8)',
-          borderTop: '2px solid rgba(255, 255, 255, 0.65)',
+            '0 0 34px rgba(0, 255, 73, 0.68), 0 8px 25px rgba(0, 0, 0, 0.48), inset 0 2px 5px rgba(255, 255, 255, 0.85), inset 0 -3px 6px rgba(0, 128, 44, 0.7)',
+          borderTop: '2px solid rgba(255, 255, 255, 0.85)',
         }}
       >
         {/* Play Icon */}

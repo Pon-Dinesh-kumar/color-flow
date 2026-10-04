@@ -23,9 +23,11 @@ export const HomeNavigation: React.FC<HomeNavigationProps> = ({
             onOpenSettings();
           }}
           aria-label="Settings"
-          className="relative w-14 h-14 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/30 shadow-[0_6px_20px_rgba(0,0,0,0.5)] flex items-center justify-center text-white active:scale-90 hover:bg-slate-800/80 hover:border-white/50 transition-all cursor-pointer group"
+          className="relative w-14 h-14 rounded-full backdrop-blur-md border flex items-center justify-center text-white active:scale-90 transition-all cursor-pointer group"
           style={{
-            boxShadow: '0 6px 18px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.4)',
+            background: 'linear-gradient(145deg, rgba(191,219,254,0.68), rgba(59,130,246,0.38) 52%, rgba(30,64,175,0.5))',
+            borderColor: 'rgba(255,255,255,0.72)',
+            boxShadow: '0 8px 24px rgba(19,53,130,0.32), inset 0 2px 5px rgba(255,255,255,0.78), inset 0 -4px 10px rgba(37,99,235,0.38)',
           }}
         >
           <Settings className="w-6 h-6 text-white group-hover:rotate-45 transition-transform duration-300 drop-shadow-md" />
@@ -47,9 +49,11 @@ export const HomeNavigation: React.FC<HomeNavigationProps> = ({
             onOpenLevels();
           }}
           aria-label="Levels"
-          className="relative w-14 h-14 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/30 shadow-[0_6px_20px_rgba(0,0,0,0.5)] flex items-center justify-center text-white active:scale-90 hover:bg-slate-800/80 hover:border-white/50 transition-all cursor-pointer group"
+          className="relative w-14 h-14 rounded-full backdrop-blur-md border flex items-center justify-center text-white active:scale-90 transition-all cursor-pointer group"
           style={{
-            boxShadow: '0 6px 18px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.4)',
+            background: 'linear-gradient(145deg, rgba(191,219,254,0.68), rgba(59,130,246,0.38) 52%, rgba(30,64,175,0.5))',
+            borderColor: 'rgba(255,255,255,0.72)',
+            boxShadow: '0 8px 24px rgba(19,53,130,0.32), inset 0 2px 5px rgba(255,255,255,0.78), inset 0 -4px 10px rgba(37,99,235,0.38)',
           }}
         >
           <BarChart2 className="w-6 h-6 text-white group-hover:scale-110 transition-transform drop-shadow-md" />
@@ -71,9 +75,11 @@ export const HomeNavigation: React.FC<HomeNavigationProps> = ({
             onOpenThemes();
           }}
           aria-label="Themes"
-          className="relative w-14 h-14 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/30 shadow-[0_6px_20px_rgba(0,0,0,0.5)] flex items-center justify-center text-white active:scale-90 hover:bg-slate-800/80 hover:border-white/50 transition-all cursor-pointer group"
+          className="relative w-14 h-14 rounded-full backdrop-blur-md border flex items-center justify-center text-white active:scale-90 transition-all cursor-pointer group"
           style={{
-            boxShadow: '0 6px 18px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.4)',
+            background: 'linear-gradient(145deg, rgba(191,219,254,0.68), rgba(59,130,246,0.38) 52%, rgba(30,64,175,0.5))',
+            borderColor: 'rgba(255,255,255,0.72)',
+            boxShadow: '0 8px 24px rgba(19,53,130,0.32), inset 0 2px 5px rgba(255,255,255,0.78), inset 0 -4px 10px rgba(37,99,235,0.38)',
           }}
         >
           <Palette className="w-6 h-6 text-white group-hover:scale-110 transition-transform drop-shadow-md" />

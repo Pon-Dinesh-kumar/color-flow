@@ -26,7 +26,6 @@ export default function App() {
     showEditor,
     loadLevel,
     currentLevelNumber,
-    customBackgroundUrl,
   } = useGameStore();
 
   // Initialize ColorFlowGame engine once
@@ -35,10 +34,6 @@ export default function App() {
 
     const game = new ColorFlowGame(canvasRef.current);
     gameRef.current = game;
-
-    if (customBackgroundUrl) {
-      game.updateBackground(customBackgroundUrl);
-    }
 
     game.onHintPositionUpdate = (pos) => {
       setHintScreenPos(pos);
@@ -79,13 +74,6 @@ export default function App() {
     }
   }, [targets]);
 
-  // Sync custom background if changed
-  useEffect(() => {
-    if (gameRef.current && customBackgroundUrl) {
-      gameRef.current.updateBackground(customBackgroundUrl);
-    }
-  }, [customBackgroundUrl]);
-
   // Trigger win celebration
   useEffect(() => {
     if (phase === 'completed' && gameRef.current) {
@@ -98,7 +86,7 @@ export default function App() {
       {/* 3D WebGL Canvas */}
       <canvas
         ref={canvasRef}
-        className="w-full h-full block cursor-pointer touch-none"
+        className="game-canvas w-full h-full block cursor-pointer touch-none"
       />
 
       {/* Non-intrusive Contextual Tutorial Hint over the pipe */}

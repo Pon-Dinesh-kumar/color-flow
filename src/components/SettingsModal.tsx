@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { X, Volume2, VolumeX, Music, Trash2, Image, Upload, Check, RotateCcw } from 'lucide-react';
+import React from 'react';
+import { X, Volume2, VolumeX, Music, Trash2 } from 'lucide-react';
 import { useGameStore } from '../game/gameState';
 import { AudioManager } from '../engine/AudioManager';
 
@@ -11,12 +11,7 @@ export const SettingsModal: React.FC = () => {
     toggleMusic,
     resetProgress,
     setShowSettings,
-    customBackgroundUrl,
-    setCustomBackgroundUrl,
   } = useGameStore();
-
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
   const handleReset = () => {
     if (confirm('Are you sure you want to reset all game progress?')) {
@@ -24,40 +19,6 @@ export const SettingsModal: React.FC = () => {
       resetProgress();
       setShowSettings(false);
     }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadStatus('Loading...');
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const dataUrl = reader.result as string;
-      setCustomBackgroundUrl(dataUrl);
-      setUploadStatus('Applied!');
-
-      // Also persist to server disk so public/assets/default_background.jpg is permanently replaced
-      try {
-        await fetch('/api/upload-background', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageBase64: dataUrl }),
-        });
-      } catch (err) {
-        console.warn('Could not persist to server disk:', err);
-      }
-
-      setTimeout(() => setUploadStatus(null), 3500);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleResetBackground = () => {
-    AudioManager.playButtonClick();
-    setCustomBackgroundUrl(null);
-    setUploadStatus('Default Restored');
-    setTimeout(() => setUploadStatus(null), 2500);
   };
 
   return (
@@ -123,58 +84,6 @@ export const SettingsModal: React.FC = () => {
                 }`}
               />
             </button>
-          </div>
-
-          {/* Background Image Direct Replacement */}
-          <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 text-white">
-                <Image className="w-4 h-4 text-cyan-400" />
-                <span className="font-bold text-sm">Background Image</span>
-              </div>
-              {uploadStatus && (
-                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5" />
-                  {uploadStatus}
-                </span>
-              )}
-            </div>
-
-            <p className="text-white/60 text-xs">
-              Upload your exact image directly without AI generation.
-            </p>
-
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/*"
-              className="hidden"
-            />
-
-            <div className="flex items-center gap-2 mt-1">
-              <button
-                onClick={() => {
-                  AudioManager.playButtonClick();
-                  fileInputRef.current?.click();
-                }}
-                className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer transition-all border border-white/20"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                Upload Exact Image
-              </button>
-
-              {customBackgroundUrl && (
-                <button
-                  onClick={handleResetBackground}
-                  title="Restore default"
-                  className="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white/80 font-bold text-xs flex items-center gap-1 border border-white/15 cursor-pointer active:scale-95 transition-all"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  Default
-                </button>
-              )}
-            </div>
           </div>
 
           {/* Reset progress */}

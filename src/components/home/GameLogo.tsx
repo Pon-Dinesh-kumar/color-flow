@@ -7,7 +7,7 @@ export const GameLogo: React.FC = () => {
       <div className="flex items-center justify-center gap-1.5 sm:gap-2.5">
         {/* C - Red */}
         <span
-          className="font-black text-4xl sm:text-5xl md:text-6xl text-[#ff2a4b] tracking-tight transform hover:scale-105 transition-transform"
+          className="font-black text-5xl sm:text-7xl md:text-8xl text-[#ff2a4b] tracking-tight transform hover:scale-105 transition-transform"
           style={{
             fontFamily: "'Fredoka', 'Nunito', sans-serif",
             textShadow:
@@ -20,7 +20,7 @@ export const GameLogo: React.FC = () => {
 
         {/* O - Yellow */}
         <span
-          className="font-black text-4xl sm:text-5xl md:text-6xl text-[#facc15] tracking-tight transform hover:scale-105 transition-transform"
+          className="font-black text-5xl sm:text-7xl md:text-8xl text-[#facc15] tracking-tight transform hover:scale-105 transition-transform"
           style={{
             fontFamily: "'Fredoka', 'Nunito', sans-serif",
             textShadow:
@@ -33,7 +33,7 @@ export const GameLogo: React.FC = () => {
 
         {/* L - Green */}
         <span
-          className="font-black text-4xl sm:text-5xl md:text-6xl text-[#22c55e] tracking-tight transform hover:scale-105 transition-transform"
+          className="font-black text-5xl sm:text-7xl md:text-8xl text-[#22c55e] tracking-tight transform hover:scale-105 transition-transform"
           style={{
             fontFamily: "'Fredoka', 'Nunito', sans-serif",
             textShadow:
@@ -46,7 +46,7 @@ export const GameLogo: React.FC = () => {
 
         {/* O - Cyan/Blue */}
         <span
-          className="font-black text-4xl sm:text-5xl md:text-6xl text-[#06b6d4] tracking-tight transform hover:scale-105 transition-transform"
+          className="font-black text-5xl sm:text-7xl md:text-8xl text-[#06b6d4] tracking-tight transform hover:scale-105 transition-transform"
           style={{
             fontFamily: "'Fredoka', 'Nunito', sans-serif",
             textShadow:
@@ -59,7 +59,7 @@ export const GameLogo: React.FC = () => {
 
         {/* R - Purple */}
         <span
-          className="font-black text-4xl sm:text-5xl md:text-6xl text-[#a855f7] tracking-tight transform hover:scale-105 transition-transform"
+          className="font-black text-5xl sm:text-7xl md:text-8xl text-[#a855f7] tracking-tight transform hover:scale-105 transition-transform"
           style={{
             fontFamily: "'Fredoka', 'Nunito', sans-serif",
             textShadow:
@@ -73,7 +73,7 @@ export const GameLogo: React.FC = () => {
 
       {/* 3D Puffy Cloud Letters: FLOW */}
       <h1
-        className="font-black text-5xl sm:text-6xl md:text-7xl text-white tracking-widest -mt-1 sm:-mt-2 uppercase"
+        className="font-black text-6xl sm:text-7xl md:text-8xl text-white tracking-widest -mt-1 sm:-mt-2 uppercase"
         style={{
           fontFamily: "'Fredoka', 'Nunito', sans-serif",
           textShadow:
@@ -85,7 +85,7 @@ export const GameLogo: React.FC = () => {
       </h1>
 
       {/* Subtitle Tagline */}
-      <p className="mt-1 text-white font-extrabold text-xs sm:text-sm tracking-wider uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+      <p className="mt-1 text-white font-extrabold text-sm sm:text-base tracking-wider uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
         Connect • Rotate • Flow
       </p>
     </div>

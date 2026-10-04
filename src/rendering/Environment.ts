@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import defaultBackground from '../assets/images/default_bg_1791135886423.png';
 import { MaterialManager } from './Materials';
 import { PuzzleBounds } from '../engine/CameraManager';
 
@@ -57,45 +58,22 @@ export class EnvironmentManager {
   }
 
   private setupBackground() {
-    // Canvas fallback gradient while image loads
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 1024;
-    const ctx = canvas.getContext('2d')!;
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, 1024);
-    gradient.addColorStop(0.0, '#1d4ed8');
-    gradient.addColorStop(0.2, '#38bdf8');
-    gradient.addColorStop(0.48, '#818cf8');
-    gradient.addColorStop(0.7, '#c084fc');
-    gradient.addColorStop(0.85, '#f472b6');
-    gradient.addColorStop(1.0, '#fde047');
-
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 512, 1024);
-
-    const fallbackTexture = new THREE.CanvasTexture(canvas);
-    fallbackTexture.generateMipmaps = false;
-    fallbackTexture.minFilter = THREE.LinearFilter;
-
-    // 9:16 Aspect plane matching mobile screen framing
     const planeHeight = 38;
-    const planeWidth = planeHeight * (9 / 16); // 21.375
+    const planeWidth = planeHeight * (9 / 16);
 
-    const bgGeom = new THREE.PlaneGeometry(planeWidth, planeHeight);
     const bgMat = new THREE.MeshBasicMaterial({
-      map: fallbackTexture,
+      map: null,
       depthWrite: false,
     });
 
+    const bgGeom = new THREE.PlaneGeometry(planeWidth, planeHeight);
     this.backgroundMesh = new THREE.Mesh(bgGeom, bgMat);
     this.backgroundMesh.position.set(0, 0.5, -11);
     this.scene.add(this.backgroundMesh);
 
-    // Load the user's default background photo from assets
     const textureLoader = new THREE.TextureLoader();
     textureLoader.load(
-      '/assets/default_background.jpg',
+      defaultBackground,
       (loadedTex) => {
         loadedTex.colorSpace = THREE.SRGBColorSpace;
         loadedTex.minFilter = THREE.LinearFilter;
@@ -103,18 +81,16 @@ export class EnvironmentManager {
         bgMat.map = loadedTex;
         bgMat.needsUpdate = true;
 
-        // Hide procedural skyline when photo asset is loaded
         if (this.skylineGroup) {
           this.skylineGroup.visible = false;
         }
       },
       undefined,
       (err) => {
-        console.warn('Could not load /assets/default_background.jpg, using procedural gradient fallback', err);
+        console.warn('Could not load default background image:', err);
       }
     );
 
-    // Setup procedural skyline fallback
     this.setupSkyline();
   }
 

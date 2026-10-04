@@ -79,7 +79,7 @@ export class MaterialManager {
           roughness: 0.06,
           metalness: 0.08,
           emissive: def.emissive,
-          emissiveIntensity: 0.42,
+          emissiveIntensity: 0.55,
         })
       );
 
@@ -92,7 +92,7 @@ export class MaterialManager {
           transmission: 0.25,
           roughness: 0.08,
           emissive: def.emissive,
-          emissiveIntensity: 0.48,
+          emissiveIntensity: 0.6,
         })
       );
     });

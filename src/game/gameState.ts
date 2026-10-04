@@ -39,7 +39,6 @@ export interface GameState {
   showLevelSelect: boolean;
   showSettings: boolean;
   showEditor: boolean;
-  customBackgroundUrl: string | null;
 
   // Actions
   loadLevel: (levelNum: number) => void;
@@ -55,7 +54,6 @@ export interface GameState {
   setShowLevelSelect: (show: boolean) => void;
   setShowSettings: (show: boolean) => void;
   setShowEditor: (show: boolean) => void;
-  setCustomBackgroundUrl: (url: string | null) => void;
   resetProgress: () => void;
 }
 
@@ -76,7 +74,6 @@ export const useGameStore = create<GameState>((set, get) => ({
   showLevelSelect: false,
   showSettings: false,
   showEditor: false,
-  customBackgroundUrl: typeof localStorage !== 'undefined' ? localStorage.getItem('custom_bg_cache') : null,
 
   loadLevel: (levelNum: number) => {
     const level = LevelLoader.getLevelByNumber(levelNum) || LevelLoader.getLevelByNumber(1)!;
@@ -253,19 +250,6 @@ export const useGameStore = create<GameState>((set, get) => ({
   setShowLevelSelect: (show: boolean) => set({ showLevelSelect: show }),
   setShowSettings: (show: boolean) => set({ showSettings: show }),
   setShowEditor: (show: boolean) => set({ showEditor: show }),
-
-  setCustomBackgroundUrl: (url: string | null) => {
-    if (typeof localStorage !== 'undefined') {
-      if (url) {
-        try {
-          localStorage.setItem('custom_bg_cache', url);
-        } catch (_) {}
-      } else {
-        localStorage.removeItem('custom_bg_cache');
-      }
-    }
-    set({ customBackgroundUrl: url });
-  },
 
   resetProgress: () => {
     SaveService.resetProgress();
