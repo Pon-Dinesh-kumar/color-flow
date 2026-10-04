@@ -20,13 +20,13 @@ export class EnvironmentManager {
   }
 
   private setupLighting() {
-    // 1. Natural Sky-to-Ground Hemisphere Fill
-    const hemiLight = new THREE.HemisphereLight(0xdbeafe, 0xfef08a, 1.0);
+    // 1. Natural Sky-to-Ground Hemisphere Fill with warm sunset bounce
+    const hemiLight = new THREE.HemisphereLight(0xdbeafe, 0xfed7aa, 1.35);
     this.scene.add(hemiLight);
 
-    // 2. Warm Key Sun Light casting soft shadows
-    const keyLight = new THREE.DirectionalLight(0xfffaf0, 1.55);
-    keyLight.position.set(4.5, 9.5, 6.5);
+    // 2. Warm Golden Sun Key Light from upper right
+    const keyLight = new THREE.DirectionalLight(0xffedd5, 2.6);
+    keyLight.position.set(5.5, 8.5, 5.5);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.width = 2048;
     keyLight.shadow.mapSize.height = 2048;
@@ -40,13 +40,18 @@ export class EnvironmentManager {
     keyLight.shadow.radius = 2.5;
     this.scene.add(keyLight);
 
-    // 3. Crisp Rim Light from behind-left giving translucent pipes and canisters edge gleam
-    const rimLight = new THREE.DirectionalLight(0xa5f3fc, 1.25);
-    rimLight.position.set(-5.5, 4.5, -4.5);
+    // 3. Sunset Rim Light from behind giving translucent glass and spheres edge gleam
+    const rimLight = new THREE.DirectionalLight(0xfb923c, 2.6);
+    rimLight.position.set(0, 3.5, -6.5);
     this.scene.add(rimLight);
 
-    // 4. Soft Front Camera Fill Light
-    const frontFill = new THREE.DirectionalLight(0xffffff, 0.45);
+    // 4. Cool Blue Skylight Fill from upper-left
+    const skyFill = new THREE.DirectionalLight(0x93c5fd, 1.4);
+    skyFill.position.set(-5.5, 6.5, 4.0);
+    this.scene.add(skyFill);
+
+    // 5. Soft Front Camera Fill Light
+    const frontFill = new THREE.DirectionalLight(0xffffff, 0.6);
     frontFill.position.set(0, 1.5, 8.5);
     this.scene.add(frontFill);
   }
@@ -217,24 +222,17 @@ export class EnvironmentManager {
       groove.position.set(centerX, bottomY + 0.005, 0);
       this.platformGroup.add(groove);
     } else {
-      // Multi-target: Elongated rounded stone dais
-      const spanWidth = Math.max(3.8, bounds.maxX - bounds.minX + 1.4);
-      const depth = 2.8;
-      const topHeight = 0.34;
+      // Multi-target / Home Screen: Subtle soft contact shadow discs under each target base
+      // allowing the background circular stone dais to be seen with natural grounding!
+      const shadowMat = new THREE.ShadowMaterial({ opacity: 0.35 });
 
-      const topGeom = new THREE.BoxGeometry(spanWidth, topHeight, depth);
-      const topMesh = new THREE.Mesh(topGeom, stoneMat);
-      topMesh.position.set(centerX, bottomY - topHeight / 2, 0);
-      topMesh.receiveShadow = true;
-      topMesh.castShadow = true;
-      this.platformGroup.add(topMesh);
-
-      // Lower base step
-      const baseGeom = new THREE.BoxGeometry(spanWidth + 0.7, 0.28, depth + 0.6);
-      const baseMesh = new THREE.Mesh(baseGeom, stoneMat);
-      baseMesh.position.set(centerX, bottomY - topHeight - 0.14, 0);
-      baseMesh.receiveShadow = true;
-      this.platformGroup.add(baseMesh);
+      // Subtle shadow catcher plane at bottom
+      const shadowPlaneGeom = new THREE.PlaneGeometry(6, 4);
+      const shadowPlane = new THREE.Mesh(shadowPlaneGeom, shadowMat);
+      shadowPlane.rotation.x = -Math.PI / 2;
+      shadowPlane.position.set(centerX, bottomY + 0.01, 0);
+      shadowPlane.receiveShadow = true;
+      this.platformGroup.add(shadowPlane);
     }
   }
 }

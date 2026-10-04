@@ -4,81 +4,82 @@ import { COLOR_PALETTE, FlowColor } from '../puzzle/ColorSystem';
 export class MaterialManager {
   private static instance: MaterialManager;
 
-  // Premium glossy glass pipe materials
+  // Ultra-clear crystal glass pipe materials
   public pipeGlassMaterial: THREE.MeshPhysicalMaterial;
   public pipeGlassActiveMaterial: THREE.MeshPhysicalMaterial;
 
-  // Polished chrome & dark titanium connector flanges
+  // Polished silver chrome & metal connector flanges
   public metalCollarMaterial: THREE.MeshStandardMaterial;
   public metalAccentMaterial: THREE.MeshStandardMaterial;
 
   // Platform & ground materials
   public platformMaterial: THREE.MeshStandardMaterial;
 
-  // Pre-cached glossy ball materials
+  // Pre-cached candy-gloss ball materials
   public ballMaterials: Map<FlowColor, THREE.MeshStandardMaterial> = new Map();
   // Pre-cached target fluid materials
   public fluidMaterials: Map<FlowColor, THREE.MeshPhysicalMaterial> = new Map();
 
   private constructor() {
-    // Ultra-glossy translucent crystal glass for pipes
+    // Crystal-clear translucent glass for pipes (so internal colored balls shine through!)
     this.pipeGlassMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
+      color: 0xf8fafc,
       transparent: true,
-      opacity: 0.88,
-      transmission: 0.82,
-      roughness: 0.1,
-      metalness: 0.05,
-      ior: 1.45,
+      opacity: 0.58,
+      transmission: 0.90,
+      roughness: 0.04,
+      metalness: 0.02,
+      ior: 1.46,
       clearcoat: 1.0,
-      clearcoatRoughness: 0.05,
+      clearcoatRoughness: 0.03,
       depthWrite: false,
     });
 
     this.pipeGlassActiveMaterial = new THREE.MeshPhysicalMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.94,
-      transmission: 0.78,
-      roughness: 0.08,
-      metalness: 0.05,
+      opacity: 0.65,
+      transmission: 0.88,
+      roughness: 0.03,
+      metalness: 0.02,
       ior: 1.48,
       clearcoat: 1.0,
-      clearcoatRoughness: 0.04,
+      clearcoatRoughness: 0.02,
       depthWrite: false,
     });
 
-    // Sleek chrome/titanium metallic collar couplings
+    // Bright polished silver chrome couplings
     this.metalCollarMaterial = new THREE.MeshStandardMaterial({
-      color: 0xb0c4de,
+      color: 0xe2e8f0,
+      metalness: 0.92,
+      roughness: 0.14,
+    });
+
+    // Dark sleek titanium accent for base pedestals
+    this.metalAccentMaterial = new THREE.MeshStandardMaterial({
+      color: 0x334155,
       metalness: 0.88,
       roughness: 0.22,
     });
 
-    this.metalAccentMaterial = new THREE.MeshStandardMaterial({
-      color: 0x475569,
-      metalness: 0.92,
-      roughness: 0.28,
-    });
-
     // Warm beveled stone podium pedestal
     this.platformMaterial = new THREE.MeshStandardMaterial({
-      color: 0x64748b,
-      roughness: 0.55,
-      metalness: 0.12,
+      color: 0x94a3b8,
+      roughness: 0.45,
+      metalness: 0.15,
     });
 
-    // Create high-gloss candy-like spheres for each color
+    // Create high-gloss, juicy candy-like spheres for each color
     (Object.keys(COLOR_PALETTE) as FlowColor[]).forEach((color) => {
       const def = COLOR_PALETTE[color];
       this.ballMaterials.set(
         color,
         new THREE.MeshStandardMaterial({
           color: def.hexNumber,
-          roughness: 0.14,
-          metalness: 0.18,
+          roughness: 0.06,
+          metalness: 0.08,
           emissive: def.emissive,
-          emissiveIntensity: 0.45,
+          emissiveIntensity: 0.42,
         })
       );
 
@@ -87,11 +88,11 @@ export class MaterialManager {
         new THREE.MeshPhysicalMaterial({
           color: def.hexNumber,
           transparent: true,
-          opacity: 0.92,
-          transmission: 0.4,
-          roughness: 0.15,
+          opacity: 0.94,
+          transmission: 0.25,
+          roughness: 0.08,
           emissive: def.emissive,
-          emissiveIntensity: 0.35,
+          emissiveIntensity: 0.48,
         })
       );
     });
