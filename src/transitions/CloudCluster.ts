@@ -21,6 +21,7 @@ export function createCloudShaderMaterial(theme: CloudThemeColors): THREE.Shader
     uniforms: {
       uCloudColor: { value: new THREE.Color(theme.primary) },
       uShadowColor: { value: new THREE.Color(theme.shadow) },
+      uSkyColor: { value: new THREE.Color(theme.secondary) },
       uHighlightColor: { value: new THREE.Color(theme.warmHighlight) },
       uLightDirection: { value: new THREE.Vector3(0.2, 1.0, 0.8).normalize() },
       uOpacity: { value: 1.0 },
@@ -42,6 +43,7 @@ export function createCloudShaderMaterial(theme: CloudThemeColors): THREE.Shader
     fragmentShader: `
       uniform vec3 uCloudColor;
       uniform vec3 uShadowColor;
+      uniform vec3 uSkyColor;
       uniform vec3 uHighlightColor;
       uniform vec3 uLightDirection;
       uniform float uOpacity;
@@ -58,18 +60,22 @@ export function createCloudShaderMaterial(theme: CloudThemeColors): THREE.Shader
 
         // Soft wrap-around volumetric diffuse lighting (light scattering through cotton)
         float NdotL = dot(normal, lightDir);
-        float diffuse = smoothstep(-0.45, 0.65, NdotL);
+        float diffuse = smoothstep(-0.40, 0.65, NdotL);
+
+        // Subtle ambient sky bounce matching our app background
+        float skyBounce = max(0.0, normal.y * 0.5 + 0.5) * (1.0 - diffuse * 0.7);
 
         // Soft luminous Fresnel rim
         float fresnel = 1.0 - max(0.0, dot(normal, viewDir));
-        float rim = pow(fresnel, 2.4);
+        float rim = pow(fresnel, 2.2);
 
-        // Subtle warm sun bounce
+        // Subtle warm sun bounce from key light
         float sunSpec = pow(max(0.0, dot(reflect(-lightDir, normal), -viewDir)), 3.5);
 
-        // Blend from rich periwinkle/lavender shadow to pure fluffy cloud white
-        vec3 color = mix(uShadowColor, uCloudColor, diffuse);
-        color = mix(color, uHighlightColor, rim * 0.40 + sunSpec * 0.30);
+        // Blend from rich shadow into app background sky tint and soft cloud fleece
+        vec3 shadowWithSky = mix(uShadowColor, uSkyColor, skyBounce * 0.55);
+        vec3 color = mix(shadowWithSky, uCloudColor, diffuse);
+        color = mix(color, uHighlightColor, rim * 0.38 + sunSpec * 0.28);
 
         gl_FragColor = vec4(color, uOpacity);
       }

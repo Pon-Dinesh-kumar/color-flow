@@ -3,17 +3,17 @@ export type CloudThemeId = 'default' | 'sunset' | 'night' | 'fantasy';
 export interface CloudThemeColors {
   id: CloudThemeId;
   name: string;
-  // Primary cloud face (bright white)
+  // Primary cloud face (bright white with slight sky-pearl tone)
   primary: string;
-  // Secondary underside & crease tone (rich soft sky blue / periwinkle)
+  // Secondary underside & sky bounce tone (matching app background sky blue)
   secondary: string;
-  // Deep ambient underbelly shadow (rich lavender / violet tint from reference image)
+  // Deep ambient underbelly shadow (rich lavender / violet tint)
   shadow: string;
   // Crevice tone (deepest folds between billows)
   deepShadow: string;
   // Crisp sunlit highlight
   highlight: string;
-  // Warm golden sun rim highlight
+  // Warm golden sun rim highlight matching app key sun
   warmHighlight: string;
   // Volumetric light ray color
   lightRay: string;
@@ -27,21 +27,21 @@ export interface CloudThemeColors {
 }
 
 export const CLOUD_THEMES: Record<CloudThemeId, CloudThemeColors> = {
-  // Default: Soft Blue / Lavender (Exact match to storyboard reference: rich periwinkle underbellies, golden rim, crisp white crests)
+  // Default: Tuned with subtle sky tones matching Color Flow's app background sky & sunlight
   default: {
     id: 'default',
     name: 'Soft Blue / Lavender',
-    primary: '#ffffff',
-    secondary: '#93c5fd', // rich soft sky blue
-    shadow: '#818cf8', // vibrant periwinkle/lavender underbelly
+    primary: '#f8fafc',
+    secondary: '#38bdf8', // matches the bright blue sky from default_background.jpg
+    shadow: '#818cf8', // periwinkle-lavender underbelly matching the horizon
     deepShadow: '#6366f1', // deep cloud fold indigo
     highlight: '#ffffff',
-    warmHighlight: '#fed7aa', // warm golden peach sun rim
-    lightRay: 'rgba(254, 240, 138, 0.55)',
-    motionStreak: ['#93c5fd', '#c7d2fe', '#fef08a', '#818cf8'],
-    skyTop: '#60a5fa',
-    skyBottom: '#a5b4fc',
-    coreGlow: 'rgba(147, 197, 253, 0.75)',
+    warmHighlight: '#fef08a', // warm golden sun rim from the app background key light
+    lightRay: 'rgba(254, 240, 138, 0.65)',
+    motionStreak: ['#38bdf8', '#93c5fd', '#fef08a', '#818cf8'],
+    skyTop: '#0284c7',
+    skyBottom: '#93c5fd',
+    coreGlow: 'rgba(56, 189, 248, 0.75)',
   },
 
   // Sunset: Soft Pink / Peach / Golden Orange

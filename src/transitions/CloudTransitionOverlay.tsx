@@ -187,21 +187,21 @@ export const CloudTransitionOverlay: React.FC = () => {
     const render = (now: number) => {
       const elapsed = (now - startTimeRef.current) / 1000;
 
-      // 0.70s: Seamless page switch behind full cloud cover
-      if (elapsed >= 0.70 && !pageSwitchedRef.current) {
+      // 0.35s: Seamless page switch behind full cloud cover
+      if (elapsed >= 0.35 && !pageSwitchedRef.current) {
         pageSwitchedRef.current = true;
         const req = CloudTransitionManager.getPendingRequest();
         req?.onPageSwitch?.();
       }
 
-      // 1.35s: Parting reveal cloud whoosh sound
-      if (elapsed >= 1.35 && !revealAudioPlayed) {
+      // 0.70s: Parting reveal cloud whoosh sound
+      if (elapsed >= 0.70 && !revealAudioPlayed) {
         revealAudioPlayed = true;
         CloudTransitionAudio.playReveal();
       }
 
-      // 2.05s: Smoothly finish transition
-      if (elapsed >= 2.05) {
+      // 1.15s: Smoothly finish transition (snappy, doesn't stay too long)
+      if (elapsed >= 1.15) {
         CloudTransitionManager.finishTransition();
         renderer.dispose();
         sharedGeom.dispose();
@@ -209,31 +209,31 @@ export const CloudTransitionOverlay: React.FC = () => {
         return;
       }
 
-      // --- LUXURIOUS SLOW & SMOOTH EASING CALCULATIONS (2.05s) ---
+      // --- STORYBOARD BALANCED TIMELINE (1.15s TOTAL) ---
       let entryProgress = 0;
       let exitProgress = 0;
       let flyProgress = 0;
 
-      if (elapsed < 0.65) {
-        // Slow & graceful entry: easeOutCubic (0.00s -> 0.65s)
-        const t = Math.min(1.0, elapsed / 0.65);
+      if (elapsed < 0.35) {
+        // Fast yet smooth entry: easeOutCubic (0.00s -> 0.35s)
+        const t = Math.min(1.0, elapsed / 0.35);
         entryProgress = 1 - Math.pow(1 - t, 3);
-      } else if (elapsed <= 1.35) {
-        // Full cover fly-through moment (0.65s -> 1.35s)
+      } else if (elapsed <= 0.70) {
+        // Snappy fly-through moment (0.35s -> 0.70s)
         entryProgress = 1.0;
-        flyProgress = (elapsed - 0.65) / 0.70;
+        flyProgress = (elapsed - 0.35) / 0.35;
       } else {
-        // Slow & silky parting reveal: easeInOutCubic (1.35s -> 2.05s)
+        // Silky parting reveal: easeInOutCubic (0.70s -> 1.15s)
         entryProgress = 1.0;
-        const t = Math.min(1.0, (elapsed - 1.35) / 0.70);
+        const t = Math.min(1.0, (elapsed - 0.70) / 0.45);
         exitProgress = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
       }
 
       // Camera forward cruise during fly-through
       if (flyProgress > 0 && exitProgress === 0) {
-        camera.position.z = 3.2 - flyProgress * 0.45;
+        camera.position.z = 3.2 - flyProgress * 0.40;
       } else if (exitProgress > 0) {
-        camera.position.z = 2.75 - exitProgress * 0.2;
+        camera.position.z = 2.80 - exitProgress * 0.20;
       } else {
         camera.position.z = 3.2;
       }
