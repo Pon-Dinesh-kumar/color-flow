@@ -172,6 +172,7 @@ export class HeroShowcaseManager {
     // Outer glass beaker cylinder
     const glassGeom = new THREE.CylinderGeometry(targetRadius, targetRadius, targetHeight, 32);
     const glassMesh = new THREE.Mesh(glassGeom, this.mats.pipeGlassMaterial);
+    glassMesh.name = 'hero_target_glass';
     glassMesh.castShadow = true;
     this.redTargetGroup.add(glassMesh);
 
@@ -195,14 +196,6 @@ export class HeroShowcaseManager {
     topCollarMesh.position.y = targetHeight / 2 - 0.04;
     this.redTargetGroup.add(topCollarMesh);
 
-    // Playful candy-red pedestal base
-    const baseGeom = new THREE.CylinderGeometry(targetRadius * 1.08, targetRadius * 1.18, 0.16, 32);
-    const baseMesh = new THREE.Mesh(baseGeom, this.mats.getToyColorMaterial('red'));
-    baseMesh.position.y = -targetHeight / 2 - 0.08;
-    baseMesh.castShadow = true;
-    baseMesh.receiveShadow = true;
-    this.redTargetGroup.add(baseMesh);
-
     this.group.add(this.redTargetGroup);
 
     // --- BLUE TARGET (Right: x = 1.35, y = -0.72) ---
@@ -210,6 +203,7 @@ export class HeroShowcaseManager {
     this.blueTargetGroup.position.set(1.35, -0.72, 0);
 
     const glassMeshBlue = new THREE.Mesh(glassGeom, this.mats.pipeGlassMaterial);
+    glassMeshBlue.name = 'hero_target_glass';
     glassMeshBlue.castShadow = true;
     this.blueTargetGroup.add(glassMeshBlue);
 
@@ -229,12 +223,6 @@ export class HeroShowcaseManager {
     const topCollarMeshBlue = new THREE.Mesh(topCollarGeom, this.mats.metalCollarMaterial);
     topCollarMeshBlue.position.y = targetHeight / 2 - 0.04;
     this.blueTargetGroup.add(topCollarMeshBlue);
-
-    const baseMeshBlue = new THREE.Mesh(baseGeom, this.mats.getToyColorMaterial('blue'));
-    baseMeshBlue.position.y = -targetHeight / 2 - 0.08;
-    baseMeshBlue.castShadow = true;
-    baseMeshBlue.receiveShadow = true;
-    this.blueTargetGroup.add(baseMeshBlue);
 
     this.group.add(this.blueTargetGroup);
   }
@@ -526,6 +514,14 @@ export class HeroShowcaseManager {
       minY: -1.75,
       maxY: 2.40,
     };
+  }
+
+  public getPlatformSurfaceY(): number {
+    const targetGlass = this.redTargetGroup?.getObjectByName('hero_target_glass');
+    if (!targetGlass) return this.getBounds().minY;
+
+    this.group.updateWorldMatrix(true, true);
+    return new THREE.Box3().setFromObject(targetGlass).min.y;
   }
 
   public dispose() {

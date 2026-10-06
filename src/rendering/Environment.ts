@@ -6,6 +6,9 @@ export class EnvironmentManager {
   private scene: THREE.Scene;
   private mats = MaterialManager.getInstance();
   private platformGroup: THREE.Group;
+  private platformBounds: PuzzleBounds | null = null;
+  private readonly deckThickness = 0.18;
+  private readonly plinthThickness = 0.22;
 
   constructor(scene: THREE.Scene) {
     this.scene = scene;
@@ -72,11 +75,15 @@ export class EnvironmentManager {
     // Omitted in favor of the complete default background art
   }
 
-  /**
-   * Builds the cohesive stone podium/platform beneath the puzzle
-   * so target canisters rest firmly on a solid stone stage.
-   */
-  public updatePlatform(bounds: PuzzleBounds, targetCount = 1) {
+  public getPlatformBounds(bounds: PuzzleBounds): PuzzleBounds {
+    return this.platformBounds ?? bounds;
+  }
+
+  public updatePlatform(
+    bounds: PuzzleBounds,
+    targetCount = 1,
+    surfaceY = bounds.minY
+  ): PuzzleBounds {
     while (this.platformGroup.children.length > 0) {
       const child = this.platformGroup.children[0];
       this.platformGroup.remove(child);
@@ -86,58 +93,67 @@ export class EnvironmentManager {
     }
 
     const centerX = (bounds.minX + bounds.maxX) / 2;
-    const bottomY = bounds.minY; // exact bottom of the target canister pedestals
+    return this.buildPlatform(bounds, targetCount, surfaceY, centerX);
+  }
 
-    const stoneMat = this.mats.platformMaterial;
-    const accentMat = this.mats.metalCollarMaterial;
+  private buildPlatform(
+    bounds: PuzzleBounds,
+    targetCount: number,
+    surfaceY: number,
+    centerX: number
+  ): PuzzleBounds {
+    const boardWidth = Math.max(0, bounds.maxX - bounds.minX);
+    const targetSpan = Math.max(0, targetCount - 1) * 1.6 + 1.2;
+    const platformWidth = Math.max(3.8, boardWidth + 0.8, targetSpan + 0.8);
+    const platformDepth = 2.4;
 
-    if (targetCount <= 1) {
-      // Single Target: Elegant circular stone podium
-      const topRadius = 1.45;
-      const topHeight = 0.32;
+    const deck = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.5, 0.5, this.deckThickness, 64),
+      this.mats.platformMaterial
+    );
+    deck.name = 'podium_deck';
+    deck.scale.set(platformWidth, 1, platformDepth);
+    deck.position.set(centerX, surfaceY - this.deckThickness / 2, 0);
+    deck.receiveShadow = true;
+    deck.castShadow = true;
+    this.platformGroup.add(deck);
 
-      // Top stone disc
-      const topGeom = new THREE.CylinderGeometry(topRadius, topRadius * 1.04, topHeight, 36);
-      const topMesh = new THREE.Mesh(topGeom, stoneMat);
-      topMesh.position.set(centerX, bottomY - topHeight / 2, 0);
-      topMesh.receiveShadow = true;
-      topMesh.castShadow = true;
-      this.platformGroup.add(topMesh);
+    const plinthWidth = platformWidth + 0.22;
+    const plinthDepth = platformDepth + 0.18;
+    const plinth = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.5, 0.5, this.plinthThickness, 64),
+      this.mats.metalCollarMaterial
+    );
+    plinth.name = 'podium_plinth';
+    plinth.scale.set(plinthWidth, 1, plinthDepth);
+    plinth.position.set(
+      centerX,
+      surfaceY - this.deckThickness - this.plinthThickness / 2,
+      0
+    );
+    plinth.receiveShadow = true;
+    plinth.castShadow = true;
+    this.platformGroup.add(plinth);
 
-      // Beveled stone rim ring at top surface
-      const rimGeom = new THREE.TorusGeometry(topRadius, 0.04, 16, 36);
-      const rimMesh = new THREE.Mesh(rimGeom, accentMat);
-      rimMesh.rotation.x = Math.PI / 2;
-      rimMesh.position.set(centerX, bottomY, 0);
-      this.platformGroup.add(rimMesh);
+    const inlay = new THREE.Mesh(
+      new THREE.TorusGeometry(1, 0.012, 8, 96),
+      this.mats.metalAccentMaterial
+    );
+    inlay.name = 'podium_inlay';
+    inlay.rotation.x = Math.PI / 2;
+    inlay.scale.set(platformWidth * 0.41, platformDepth * 0.36, 1);
+    inlay.position.set(centerX, surfaceY + 0.006, 0);
+    this.platformGroup.add(inlay);
 
-      // Lower stepped stone base plinth
-      const baseRadius = 1.85;
-      const baseHeight = 0.28;
-      const baseGeom = new THREE.CylinderGeometry(baseRadius, baseRadius * 1.06, baseHeight, 36);
-      const baseMesh = new THREE.Mesh(baseGeom, stoneMat);
-      baseMesh.position.set(centerX, bottomY - topHeight - baseHeight / 2, 0);
-      baseMesh.receiveShadow = true;
-      this.platformGroup.add(baseMesh);
-
-      // Concentric stone groove detail on top
-      const grooveGeom = new THREE.TorusGeometry(topRadius * 0.72, 0.02, 8, 32);
-      const groove = new THREE.Mesh(grooveGeom, accentMat);
-      groove.rotation.x = Math.PI / 2;
-      groove.position.set(centerX, bottomY + 0.005, 0);
-      this.platformGroup.add(groove);
-    } else {
-      // Multi-target / Home Screen: Subtle soft contact shadow discs under each target base
-      // allowing the background circular stone dais to be seen with natural grounding!
-      const shadowMat = new THREE.ShadowMaterial({ opacity: 0.35 });
-
-      // Subtle shadow catcher plane at bottom
-      const shadowPlaneGeom = new THREE.PlaneGeometry(6, 4);
-      const shadowPlane = new THREE.Mesh(shadowPlaneGeom, shadowMat);
-      shadowPlane.rotation.x = -Math.PI / 2;
-      shadowPlane.position.set(centerX, bottomY + 0.01, 0);
-      shadowPlane.receiveShadow = true;
-      this.platformGroup.add(shadowPlane);
-    }
+    this.platformBounds = {
+      minX: centerX - plinthWidth / 2,
+      maxX: centerX + plinthWidth / 2,
+      minY: Math.min(
+        bounds.minY,
+        surfaceY - this.deckThickness - this.plinthThickness
+      ),
+      maxY: bounds.maxY,
+    };
+    return this.platformBounds;
   }
 }

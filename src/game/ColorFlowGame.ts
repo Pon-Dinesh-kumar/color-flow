@@ -132,16 +132,16 @@ export class ColorFlowGame {
       this.updateHintScreenPosition();
     } else if (this.heroShowcase) {
       const aspect = width / height;
-      const bounds = this.heroShowcase.getBounds();
+      const bounds = this.environment.getPlatformBounds(this.heroShowcase.getBounds());
       this.cameraManager.framePuzzle(bounds, aspect, false);
     }
   };
 
   private getLevelFrameBounds(): PuzzleBounds {
-    const bounds = this.boardView.getPuzzleBounds();
+    const bounds = this.environment.getPlatformBounds(this.boardView.getPuzzleBounds());
     return {
       ...bounds,
-      minY: bounds.minY - 0.65,
+      minY: bounds.minY - 0.15,
       maxY: bounds.maxY + 0.15,
     };
   }
@@ -180,8 +180,11 @@ export class ColorFlowGame {
     this.heroShowcase = new HeroShowcaseManager();
     this.scene.add(this.heroShowcase.group);
 
-    const bounds = this.heroShowcase.getBounds();
-    this.environment.updatePlatform(bounds, 2);
+    const bounds = this.environment.updatePlatform(
+      this.heroShowcase.getBounds(),
+      2,
+      this.heroShowcase.getPlatformSurfaceY()
+    );
 
     const aspect = this.canvas.clientWidth / Math.max(1, this.canvas.clientHeight);
     this.cameraManager.framePuzzle(bounds, aspect, false);

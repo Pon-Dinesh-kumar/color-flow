@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { TargetNode } from '../puzzle/Target';
 import { MaterialManager } from './Materials';
-import { COLOR_PALETTE } from '../puzzle/ColorSystem';
 import gsap from 'gsap';
 
 export class TargetCanisterMesh {
@@ -37,32 +36,15 @@ export class TargetCanisterMesh {
     const ringMat = this.mats.getBallMaterial(this.target.color);
     this.glowRingMesh = new THREE.Mesh(ringGeom, ringMat);
     this.glowRingMesh.rotation.x = Math.PI / 2;
-    this.glowRingMesh.position.y = -0.42;
+    this.glowRingMesh.position.y = -0.41;
 
     this.build();
   }
 
   private build() {
     const canisterHeight = 1.05;
-    const colorDef = COLOR_PALETTE[this.target.color] || COLOR_PALETTE.red;
 
-    // 1. Playful Candy-Colored Base Container (clean toy look)
-    const baseCylinderGeom = new THREE.CylinderGeometry(0.52, 0.54, 0.38, 28);
-    const baseMat = this.mats.getToyColorMaterial(this.target.color);
-    const baseCylinder = new THREE.Mesh(baseCylinderGeom, baseMat);
-    baseCylinder.position.y = -0.52;
-    baseCylinder.castShadow = true;
-    baseCylinder.receiveShadow = true;
-    this.group.add(baseCylinder);
-
-    // Clean glossy white toy bottom rim resting on the stone dais
-    const bottomRimGeom = new THREE.CylinderGeometry(0.56, 0.60, 0.14, 28);
-    const bottomRim = new THREE.Mesh(bottomRimGeom, this.mats.metalCollarMaterial);
-    bottomRim.position.y = -0.66;
-    bottomRim.castShadow = true;
-    this.group.add(bottomRim);
-
-    // Chrome lip ring between base and glass
+    // Keep a narrow joint ring, but let the glass bottom rest directly on the shared floor.
     const baseLipGeom = new THREE.TorusGeometry(0.53, 0.03, 16, 28);
     const baseLip = new THREE.Mesh(baseLipGeom, this.mats.metalAccentMaterial);
     baseLip.rotation.x = Math.PI / 2;
@@ -157,6 +139,6 @@ export class TargetCanisterMesh {
   }
 
   public getBottomY(): number {
-    return this.group.position.y - 0.74;
+    return this.group.position.y - 0.46;
   }
 }
