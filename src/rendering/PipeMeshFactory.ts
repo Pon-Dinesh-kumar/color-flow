@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { MaterialManager } from './Materials';
 import { PipeNode } from '../puzzle/Pipe';
 import { COLOR_PALETTE, FlowColor } from '../puzzle/ColorSystem';
@@ -84,10 +85,25 @@ export class PipeMeshFactory {
     collarGroup.position.set(x, y, 0);
     collarGroup.rotation.z = angleZ;
 
-    // 1. Glossy white toy enamel sleeve (clean, friendly, bright)
-    const sleeveGeom = new THREE.CylinderGeometry(COLLAR_RADIUS, COLLAR_RADIUS, COLLAR_LENGTH, 28);
+    // Hollow enamel sleeve keeps the port visibly open while giving it a molded rim.
+    const innerRadius = PIPE_RADIUS * 0.78;
+    const halfLength = COLLAR_LENGTH / 2;
+    const outerRadius = COLLAR_RADIUS;
+    const sleeveGeom = new THREE.LatheGeometry(
+      [
+        new THREE.Vector2(innerRadius, -halfLength),
+        new THREE.Vector2(outerRadius - 0.035, -halfLength),
+        new THREE.Vector2(outerRadius, -halfLength + 0.035),
+        new THREE.Vector2(outerRadius, halfLength - 0.035),
+        new THREE.Vector2(outerRadius - 0.035, halfLength),
+        new THREE.Vector2(innerRadius, halfLength),
+        new THREE.Vector2(innerRadius, -halfLength),
+      ],
+      32
+    );
     const sleeve = new THREE.Mesh(sleeveGeom, this.mats.metalCollarMaterial);
     sleeve.castShadow = true;
+    sleeve.receiveShadow = true;
     collarGroup.add(sleeve);
 
     // 2. Cheerful polished chrome outer lip rim
@@ -113,14 +129,22 @@ export class PipeMeshFactory {
   private static createGlassCylinder(length: number): THREE.Group {
     const group = new THREE.Group();
 
-    // 1. Crystal toy acrylic tube
-    const tubeGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, length, 28);
+    // Open-ended shell leaves the route unobstructed and avoids solid glass end caps.
+    const tubeGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, length, 32, 1, true);
     const tubeMaterial = this.mats.pipeGlassMaterial;
     const tube = new THREE.Mesh(tubeGeom, tubeMaterial);
     tube.castShadow = true;
     group.add(tube);
 
-    const contourGeom = new THREE.CylinderGeometry(PIPE_RADIUS * 0.96, PIPE_RADIUS * 0.96, length * 0.98, 28);
+    // A second, smaller open shell makes acrylic wall thickness readable through the clear outer shell.
+    const contourGeom = new THREE.CylinderGeometry(
+      PIPE_RADIUS * 0.84,
+      PIPE_RADIUS * 0.84,
+      length * 0.98,
+      32,
+      1,
+      true
+    );
     const contour = new THREE.Mesh(contourGeom, this.mats.pipeGlassContourMaterial);
     group.add(contour);
 
@@ -256,10 +280,11 @@ export class PipeMeshFactory {
     junctionGroup.add(this.createCollar(-HALF_CELL + COLLAR_LENGTH / 2, 0, Math.PI / 2));
     junctionGroup.add(this.createCollar(HALF_CELL - COLLAR_LENGTH / 2, 0, Math.PI / 2));
 
-    // 3. Central Glossy Candy-Blue Cube (0.72 x 0.72 x 0.64)
-    const cubeGeom = new THREE.BoxGeometry(0.72, 0.72, 0.64);
+    // 3. Rounded blue mechanical housing with molded, bevel-like toy edges.
+    const cubeGeom = new RoundedBoxGeometry(0.72, 0.72, 0.64, 4, 0.12);
     const cubeMesh = new THREE.Mesh(cubeGeom, this.mats.junctionBlueMaterial);
     cubeMesh.castShadow = true;
+    cubeMesh.receiveShadow = true;
     junctionGroup.add(cubeMesh);
 
     // 4. Cheerful chrome corner rivets
@@ -276,25 +301,51 @@ export class PipeMeshFactory {
       junctionGroup.add(rivet);
     });
 
-    // 5. 3D Molded White Central Button Dial (Clean 3D geometry - NO flat stickers!)
-    const dialBaseGeom = new THREE.CylinderGeometry(0.22, 0.24, 0.08, 32);
-    const dialBase = new THREE.Mesh(dialBaseGeom, this.mats.junctionWhiteMaterial);
+    // 5. Raised chrome bearing and enamel dial make the turntable read as a physical control.
+    const dialBaseGeom = new THREE.CylinderGeometry(0.28, 0.30, 0.09, 40);
+    const dialBase = new THREE.Mesh(dialBaseGeom, this.mats.metalAccentMaterial);
     dialBase.rotation.x = Math.PI / 2;
-    dialBase.position.z = 0.34;
+    dialBase.position.z = 0.35;
     junctionGroup.add(dialBase);
 
-    // Outer embossed chrome ring on dial
-    const dialRimGeom = new THREE.TorusGeometry(0.21, 0.024, 16, 32);
+    const dialFace = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.235, 0.25, 0.055, 40),
+      this.mats.junctionBlueMaterial
+    );
+    dialFace.rotation.x = Math.PI / 2;
+    dialFace.position.z = 0.405;
+    dialFace.castShadow = true;
+    junctionGroup.add(dialFace);
+
+    // Outer embossed chrome ring on the dial.
+    const dialRimGeom = new THREE.TorusGeometry(0.245, 0.026, 16, 40);
     const dialRim = new THREE.Mesh(dialRimGeom, this.mats.metalAccentMaterial);
-    dialRim.position.z = 0.38;
+    dialRim.position.z = 0.435;
     junctionGroup.add(dialRim);
 
-    // 3D molded inner rotating core sphere
-    const coreGeom = new THREE.SphereGeometry(0.10, 24, 24);
-    const coreMat = this.mats.getBallMaterial('blue');
-    const core = new THREE.Mesh(coreGeom, coreMat);
-    core.position.z = 0.38;
-    junctionGroup.add(core);
+    const arrowMaterial = this.mats.junctionWhiteMaterial;
+    const arrowRadius = 0.14;
+    const arcGeometry = new THREE.TorusGeometry(arrowRadius, 0.018, 8, 28, Math.PI * 1.45);
+    const upperArc = new THREE.Mesh(arcGeometry, arrowMaterial);
+    upperArc.rotation.z = Math.PI * 0.04;
+    upperArc.position.z = 0.45;
+    junctionGroup.add(upperArc);
+
+    const lowerArc = new THREE.Mesh(arcGeometry, arrowMaterial);
+    lowerArc.rotation.z = Math.PI + Math.PI * 0.04;
+    lowerArc.position.z = 0.45;
+    junctionGroup.add(lowerArc);
+
+    const arrowHeadGeometry = new THREE.ConeGeometry(0.035, 0.075, 12);
+    const arrowHeadA = new THREE.Mesh(arrowHeadGeometry, arrowMaterial);
+    arrowHeadA.position.set(0.12, 0.075, 0.45);
+    arrowHeadA.rotation.z = -Math.PI / 4;
+    junctionGroup.add(arrowHeadA);
+
+    const arrowHeadB = new THREE.Mesh(arrowHeadGeometry, arrowMaterial);
+    arrowHeadB.position.set(-0.12, -0.075, 0.45);
+    arrowHeadB.rotation.z = (3 * Math.PI) / 4;
+    junctionGroup.add(arrowHeadB);
 
     parent.add(junctionGroup);
   }

@@ -128,7 +128,7 @@ export class ColorFlowGame {
 
     if (this.currentLevelConfig) {
       const aspect = width / height;
-      this.cameraManager.framePuzzle(this.getLevelFrameBounds(), aspect, false);
+      this.cameraManager.framePuzzle(this.getLevelFrameBounds(), aspect, false, 0.78, 0.94);
       this.updateHintScreenPosition();
     } else if (this.heroShowcase) {
       const aspect = width / height;
@@ -208,7 +208,7 @@ export class ColorFlowGame {
     this.environment.updatePlatform(bounds, this.boardView.getTargetCount());
 
     const aspect = this.canvas.clientWidth / Math.max(1, this.canvas.clientHeight);
-    this.cameraManager.framePuzzle(this.getLevelFrameBounds(), aspect, true);
+    this.cameraManager.framePuzzle(this.getLevelFrameBounds(), aspect, true, 0.78, 0.94);
 
     this.recomputeFlow(currentPipes);
     this.updateHintScreenPosition();

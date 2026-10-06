@@ -83,7 +83,7 @@ export class ParticleSystem {
       ),
       velocity: new THREE.Vector3((Math.random() - 0.5) * 0.1, (Math.random() - 0.5) * 0.1, 0),
       color: baseColor,
-      size: 0.045,
+      size: 0.032,
       alpha: 0.65,
       life: 0,
       maxLife: 0.16,

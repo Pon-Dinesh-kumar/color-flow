@@ -62,11 +62,12 @@ export class MaterialManager {
 
     // 2. Soft glass contour for background separation (playful lavender-sky tint instead of gloomy dark grey)
     this.pipeGlassContourMaterial = new THREE.MeshStandardMaterial({
-      color: 0x3b82f6,
+      color: 0xc7e7ff,
       transparent: true,
-      opacity: 0.14,
-      side: THREE.BackSide,
-      roughness: 0.25,
+      opacity: 0.16,
+      side: THREE.DoubleSide,
+      roughness: 0.18,
+      metalness: 0.08,
       depthWrite: false,
     });
 

@@ -22,6 +22,7 @@ export interface ActiveBall {
   totalDistance: number;
   traveledDistance: number;
   trailTimer: number;
+  impactTimer: number;
 }
 export class BallPool {
   private scene: THREE.Scene;
@@ -114,6 +115,7 @@ export class BallPool {
       totalDistance: totalDist,
       traveledDistance: 0,
       trailTimer: 0,
+      impactTimer: 0,
     });
 
     return true;
@@ -172,27 +174,33 @@ export class BallPool {
         // Section 6: Smooth linear movement in pipe
         ball.mesh.position.lerpVectors(p1, p2, Math.min(1.0, ball.segmentT));
 
-        // Section 10: Subtle Trail Effect (emitted behind ball every 0.04s)
+        ball.impactTimer = Math.max(0, ball.impactTimer - delta);
+
+        // Section 10: Subtle Trail Effect, kept sparse so the ball remains readable.
         ball.trailTimer += delta;
-        if (ball.trailTimer >= 0.04) {
+        if (ball.trailTimer >= 0.065) {
           ball.trailTimer = 0;
           this.onBallStep?.(ball.mesh.position, ball.currentColor);
         }
 
-        // Section 6: Slight motion stretch along travel direction
+        // Section 6: A short parabolic bump at pipe joins adds physical contact feedback.
         const moveDir = p2.clone().sub(p1).normalize();
+        const impact = ball.impactTimer > 0 ? Math.sin((ball.impactTimer / 0.12) * Math.PI) : 0;
+        const stretch = 1 + impact * 0.1;
         if (Math.abs(moveDir.y) > 0.75) {
-          ball.mesh.scale.set(0.92, 1.08, 0.92);
+          ball.mesh.scale.set(0.92 / stretch, 1.08 * stretch, 0.92 / stretch);
         } else if (Math.abs(moveDir.x) > 0.75) {
-          ball.mesh.scale.set(1.08, 0.92, 0.92);
+          ball.mesh.scale.set(1.08 * stretch, 0.92 / stretch, 0.92 / stretch);
         } else {
-          ball.mesh.scale.set(1, 1, 1);
+          ball.mesh.scale.set(stretch, stretch, stretch);
         }
+        ball.mesh.position.z += impact * 0.025;
 
         // Advance to next segment
         if (ball.segmentT >= 1.0) {
           ball.pathIndex++;
           ball.segmentT = 0;
+          ball.impactTimer = 0.12;
 
           // Check if reached destination
           if (ball.pathIndex >= ball.points.length - 1) {

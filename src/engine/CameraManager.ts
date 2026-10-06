@@ -29,7 +29,13 @@ export class CameraManager {
    * Dynamically frames the complete puzzle machine (SOURCE -> PIPE NETWORK -> TARGET)
    * as one cohesive, unified composition occupying 65-75% of the screen.
    */
-  public framePuzzle(bounds: PuzzleBounds, aspect: number, animated = true) {
+  public framePuzzle(
+    bounds: PuzzleBounds,
+    aspect: number,
+    animated = true,
+    targetHeightFraction = 0.68,
+    targetWidthFraction = 0.88
+  ) {
     this.camera.aspect = aspect;
     this.camera.updateProjectionMatrix();
 
@@ -44,12 +50,10 @@ export class CameraManager {
     const fovRad = THREE.MathUtils.degToRad(this.camera.fov);
 
     // Leave room for the top HUD and bottom objectives around the full puzzle and podium.
-    const targetHeightFraction = 0.68;
     const requiredVisibleHeight = puzzleHeight / targetHeightFraction;
     const distY = requiredVisibleHeight / (2 * Math.tan(fovRad / 2));
 
     // Width framing: puzzle occupies ~88% of screen width
-    const targetWidthFraction = 0.88;
     const requiredVisibleWidth = puzzleWidth / targetWidthFraction;
     const distX = requiredVisibleWidth / (2 * Math.tan(fovRad / 2) * aspect);
 

@@ -24,7 +24,10 @@ export const TutorialHint: React.FC<TutorialHintProps> = ({ screenPos, visible }
           Tap to rotate!
         </div>
 
-        <div className="absolute top-10 flex flex-col items-center animate-bounce" style={{ animationDuration: '1.2s' }}>
+        <div
+          className="absolute left-[calc(50%+1.35rem)] top-[calc(50%+0.35rem)] flex -translate-x-1/2 flex-col items-center animate-bounce"
+          style={{ animationDuration: '1.2s' }}
+        >
           <span className="text-3xl drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]">
             👆
           </span>
