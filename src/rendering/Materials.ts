@@ -4,42 +4,44 @@ import { COLOR_PALETTE, FlowColor } from '../puzzle/ColorSystem';
 export class MaterialManager {
   private static instance: MaterialManager;
 
-  // Ultra-clear high-visibility crystal glass pipe materials
+  // Friendly crystal-clear toy acrylic pipe materials
   public pipeGlassMaterial: THREE.MeshPhysicalMaterial;
   public pipeGlassActiveMaterial: THREE.MeshPhysicalMaterial;
   public pipeGlassContourMaterial: THREE.MeshStandardMaterial;
   public pipeGlassHighlightMaterial: THREE.MeshBasicMaterial;
 
-  // Dark gunmetal connector rings & polished silver chrome flanges
+  // Playful toy collar materials (clean glossy white enamel & polished chrome lips)
   public metalCollarMaterial: THREE.MeshStandardMaterial;
   public metalAccentMaterial: THREE.MeshStandardMaterial;
 
-  // Cobalt blue junction box material
+  // Candy toy colored materials for canister caps, funnels & accents
+  public toyColorMaterials: Map<FlowColor, THREE.MeshStandardMaterial> = new Map();
+
+  // Candy blue rotatable junction box material
   public junctionBlueMaterial: THREE.MeshPhysicalMaterial;
-  public junctionDarkMaterial: THREE.MeshStandardMaterial;
+  public junctionWhiteMaterial: THREE.MeshStandardMaterial;
 
   // Platform & ground materials
   public platformMaterial: THREE.MeshStandardMaterial;
 
-  // Pre-cached high-quality PBR glossy ball materials (from Ball Model Guide)
+  // High-specular juicy candy ball materials (Kids game candy-gloss feel)
   public ballMaterials: Map<FlowColor, THREE.MeshPhysicalMaterial> = new Map();
-  // Pre-cached target fluid materials
+  // Target fluid materials
   public fluidMaterials: Map<FlowColor, THREE.MeshPhysicalMaterial> = new Map();
 
   private constructor() {
-    // 1. Transparent Glass with clear silhouette & refraction
-    // Tuned so internal colored balls pop while the glass cylinder remains distinctly visible against any background
+    // 1. Crystal-clear friendly toy acrylic for pipes
     this.pipeGlassMaterial = new THREE.MeshPhysicalMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.52,
-      transmission: 0.52, // Balanced transmission ensures glass is visible even over bright clouds
-      roughness: 0.05,
-      metalness: 0.02,
-      ior: 1.52,
-      thickness: 0.65,
-      attenuationColor: new THREE.Color(0x94a3b8),
-      attenuationDistance: 1.0,
+      opacity: 0.42,
+      transmission: 0.65,
+      roughness: 0.02,
+      metalness: 0.01,
+      ior: 1.50,
+      thickness: 0.5,
+      attenuationColor: new THREE.Color(0xa5b4fc),
+      attenuationDistance: 1.4,
       clearcoat: 1.0,
       clearcoatRoughness: 0.02,
       depthWrite: false,
@@ -48,23 +50,23 @@ export class MaterialManager {
     this.pipeGlassActiveMaterial = new THREE.MeshPhysicalMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.68,
+      opacity: 0.65,
       transmission: 0.45,
-      roughness: 0.04,
+      roughness: 0.03,
       metalness: 0.02,
-      ior: 1.52,
+      ior: 1.50,
       clearcoat: 1.0,
       clearcoatRoughness: 0.02,
       depthWrite: false,
     });
 
-    // 2. Subtle glass contour / inner refraction back-silhouette (guarantees pipe visibility over bright sky/clouds)
+    // 2. Soft glass contour for background separation (playful lavender-sky tint instead of gloomy dark grey)
     this.pipeGlassContourMaterial = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
+      color: 0x3b82f6,
       transparent: true,
-      opacity: 0.18,
+      opacity: 0.14,
       side: THREE.BackSide,
-      roughness: 0.2,
+      roughness: 0.25,
       depthWrite: false,
     });
 
@@ -72,75 +74,90 @@ export class MaterialManager {
     this.pipeGlassHighlightMaterial = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.70,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
 
-    // 4. Dark charcoal / gunmetal connector rings (Metal Ring / Connector from reference image)
+    // 4. Clean, glossy white porcelain / toy enamel collar cuffs (kids game friendly!)
     this.metalCollarMaterial = new THREE.MeshStandardMaterial({
-      color: 0x1e293b,
-      metalness: 0.88,
-      roughness: 0.22,
+      color: 0xffffff,
+      roughness: 0.12,
+      metalness: 0.10,
     });
 
-    // 5. Polished silver chrome beveled rim flange
+    // 5. Cheerful polished chrome bevel lip
     this.metalAccentMaterial = new THREE.MeshStandardMaterial({
       color: 0xe2e8f0,
       metalness: 0.95,
-      roughness: 0.10,
+      roughness: 0.08,
     });
 
-    // 6. Cobalt blue glossy cube for Rotatable Junction
+    // 6. Vibrant candy-blue cube for Rotatable Junction
     this.junctionBlueMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0x0284c7,
-      metalness: 0.12,
-      roughness: 0.18,
+      color: 0x0ea5e9,
+      metalness: 0.08,
+      roughness: 0.12,
       clearcoat: 1.0,
-      clearcoatRoughness: 0.05,
-      emissive: 0x0369a1,
-      emissiveIntensity: 0.35,
+      clearcoatRoughness: 0.04,
+      emissive: 0x0284c7,
+      emissiveIntensity: 0.28,
     });
 
-    // 7. Dark rubberized bezel trim for junction
-    this.junctionDarkMaterial = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      metalness: 0.82,
-      roughness: 0.35,
+    // Molded 3D white button dial
+    this.junctionWhiteMaterial = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.15,
+      metalness: 0.05,
     });
 
-    // 8. Stone podium pedestal
+    // 7. Stone podium pedestal
     this.platformMaterial = new THREE.MeshStandardMaterial({
       color: 0x94a3b8,
       roughness: 0.45,
       metalness: 0.15,
     });
 
-    // 9. High-gloss, high-specular spheres with subtle glow (Ball Model in reference)
+    // 8. Juicy, vibrant candy ball & toy fixture materials
     (Object.keys(COLOR_PALETTE) as FlowColor[]).forEach((color) => {
       const def = COLOR_PALETTE[color];
+
+      // Toy plastic for caps & funnels
+      this.toyColorMaterials.set(
+        color,
+        new THREE.MeshStandardMaterial({
+          color: def.hexNumber,
+          roughness: 0.18,
+          metalness: 0.05,
+          emissive: def.hexNumber,
+          emissiveIntensity: 0.20,
+        })
+      );
+
+      // Juicy candy spheres with high specular shine and warm inner glow
       this.ballMaterials.set(
         color,
         new THREE.MeshPhysicalMaterial({
           color: def.hexNumber,
-          metalness: 0.04,
-          roughness: 0.12,
+          metalness: 0.02,
+          roughness: 0.08,
           clearcoat: 1.0,
-          clearcoatRoughness: 0.08,
+          clearcoatRoughness: 0.04,
           transmission: 0.0,
           emissive: def.hexNumber,
-          emissiveIntensity: 0.28,
-          reflectivity: 0.85,
+          emissiveIntensity: 0.32,
+          reflectivity: 0.90,
         })
       );
 
+      // Target fluid
       this.fluidMaterials.set(
         color,
         new THREE.MeshPhysicalMaterial({
           color: def.hexNumber,
           transparent: true,
-          opacity: 0.95,
-          transmission: 0.22,
+          opacity: 0.94,
+          transmission: 0.20,
           roughness: 0.08,
           emissive: def.hexNumber,
           emissiveIntensity: 0.35,
@@ -162,5 +179,9 @@ export class MaterialManager {
 
   public getFluidMaterial(color: FlowColor): THREE.MeshPhysicalMaterial {
     return this.fluidMaterials.get(color) || this.fluidMaterials.get('red')!;
+  }
+
+  public getToyColorMaterial(color: FlowColor): THREE.MeshStandardMaterial {
+    return this.toyColorMaterials.get(color) || this.toyColorMaterials.get('red')!;
   }
 }

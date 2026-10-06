@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { TargetNode } from '../puzzle/Target';
 import { MaterialManager } from './Materials';
 import { COLOR_PALETTE } from '../puzzle/ColorSystem';
-import { PipeTextureFactory } from './PipeTextureFactory';
 import gsap from 'gsap';
 
 export class TargetCanisterMesh {
@@ -11,7 +10,6 @@ export class TargetCanisterMesh {
   private mats = MaterialManager.getInstance();
   private fillMesh: THREE.Mesh;
   private glowRingMesh: THREE.Mesh;
-  private lockBadgeMesh: THREE.Mesh;
   private maxFillHeight = 0.95;
   private canisterRadius = 0.46;
 
@@ -41,17 +39,6 @@ export class TargetCanisterMesh {
     this.glowRingMesh.rotation.x = Math.PI / 2;
     this.glowRingMesh.position.y = -0.42;
 
-    // Victory Lock Badge ("Locked When Correct" from reference image)
-    const lockBadgeGeom = new THREE.PlaneGeometry(0.38, 0.38);
-    const lockBadgeMat = new THREE.MeshBasicMaterial({
-      map: PipeTextureFactory.getLockTexture(),
-      transparent: true,
-      depthWrite: false,
-    });
-    this.lockBadgeMesh = new THREE.Mesh(lockBadgeGeom, lockBadgeMat);
-    this.lockBadgeMesh.position.set(0, 0.15, 0.48);
-    this.lockBadgeMesh.visible = target.currentAmount >= target.requiredAmount;
-
     this.build();
   }
 
@@ -59,22 +46,16 @@ export class TargetCanisterMesh {
     const canisterHeight = 1.05;
     const colorDef = COLOR_PALETTE[this.target.color] || COLOR_PALETTE.red;
 
-    // 1. Base Container (With Color Fill) from reference image
+    // 1. Playful Candy-Colored Base Container (clean toy look)
     const baseCylinderGeom = new THREE.CylinderGeometry(0.52, 0.54, 0.38, 28);
-    const baseMat = new THREE.MeshStandardMaterial({
-      color: colorDef.hexNumber,
-      roughness: 0.25,
-      metalness: 0.1,
-      emissive: colorDef.emissive,
-      emissiveIntensity: 0.35,
-    });
+    const baseMat = this.mats.getToyColorMaterial(this.target.color);
     const baseCylinder = new THREE.Mesh(baseCylinderGeom, baseMat);
     baseCylinder.position.y = -0.52;
     baseCylinder.castShadow = true;
     baseCylinder.receiveShadow = true;
     this.group.add(baseCylinder);
 
-    // Dark charcoal bottom rim collar resting on stone dais
+    // Clean glossy white toy bottom rim resting on the stone dais
     const bottomRimGeom = new THREE.CylinderGeometry(0.56, 0.60, 0.14, 28);
     const bottomRim = new THREE.Mesh(bottomRimGeom, this.mats.metalCollarMaterial);
     bottomRim.position.y = -0.66;
@@ -91,7 +72,7 @@ export class TargetCanisterMesh {
     // Glowing base ring
     this.group.add(this.glowRingMesh);
 
-    // 2. Transparent Glass Beaker (high visibility with contour)
+    // 2. Crystal Toy Acrylic Glass Beaker
     const glassGeom = new THREE.CylinderGeometry(this.canisterRadius, this.canisterRadius, canisterHeight, 28);
     const glassMesh = new THREE.Mesh(glassGeom, this.mats.pipeGlassMaterial);
     glassMesh.position.y = 0.1;
@@ -107,7 +88,7 @@ export class TargetCanisterMesh {
     hlMesh.position.set(0, 0.1, 0.02);
     this.group.add(hlMesh);
 
-    // 3. Chrome intake collar at top (meeting pipe above)
+    // 3. Intake collar at top (glossy white toy collar with chrome lip)
     const intakeCollarGeom = new THREE.CylinderGeometry(0.32, this.canisterRadius * 1.04, 0.24, 28);
     const intakeCollar = new THREE.Mesh(intakeCollarGeom, this.mats.metalCollarMaterial);
     intakeCollar.position.y = 0.68;
@@ -122,9 +103,6 @@ export class TargetCanisterMesh {
 
     // Add fill mesh inside glass
     this.group.add(this.fillMesh);
-
-    // Add lock badge mesh
-    this.group.add(this.lockBadgeMesh);
   }
 
   public updateFill(current: number, required: number) {
@@ -134,17 +112,6 @@ export class TargetCanisterMesh {
       duration: 0.35,
       ease: 'back.out(1.6)',
     });
-
-    if (current >= required) {
-      this.lockBadgeMesh.visible = true;
-      gsap.fromTo(
-        this.lockBadgeMesh.scale,
-        { x: 0, y: 0, z: 0 },
-        { x: 1, y: 1, z: 1, duration: 0.4, ease: 'elastic.out(1, 0.5)' }
-      );
-    } else {
-      this.lockBadgeMesh.visible = false;
-    }
   }
 
   public playPulse() {

@@ -266,6 +266,7 @@ export class ColorFlowGame {
   public triggerWinCelebration() {
     this.cameraManager.playWinZoom();
     AudioManager.playBallComplete();
+    this.boardView.emptyAllSources();
     if (this.currentLevelConfig) {
       for (const tgt of this.currentLevelConfig.targets) {
         this.boardView.playTargetWin(tgt.id);
@@ -304,7 +305,7 @@ export class ColorFlowGame {
           if (path.reachesTarget && path.targetId) {
             const tgtState = state.targets[path.targetId];
             if (tgtState && !tgtState.isComplete) {
-              this.ballPool.spawnBallOnPath(
+              const spawned = this.ballPool.spawnBallOnPath(
                 path,
                 dims.width,
                 dims.height,
@@ -312,6 +313,9 @@ export class ColorFlowGame {
                 config.ballSpeed,
                 (wp) => this.boardView.getWaypointWorldPosition(wp)
               );
+              if (spawned && path.sourceId) {
+                this.boardView.popSourceBall(path.sourceId);
+              }
             }
           }
         }

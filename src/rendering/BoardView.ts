@@ -233,6 +233,19 @@ export class BoardView {
     }
   }
 
+  public popSourceBall(sourceId: string) {
+    const src = this.sourceMeshes.get(sourceId);
+    if (src) {
+      src.popBall();
+    }
+  }
+
+  public emptyAllSources() {
+    for (const src of this.sourceMeshes.values()) {
+      src.emptyAll();
+    }
+  }
+
   public playTargetWin(targetId: string) {
     const tgt = this.targetMeshes.get(targetId);
     if (tgt) {
