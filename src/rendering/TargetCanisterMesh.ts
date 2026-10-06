@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { TargetNode } from '../puzzle/Target';
 import { MaterialManager } from './Materials';
+import { COLOR_PALETTE } from '../puzzle/ColorSystem';
+import { PipeTextureFactory } from './PipeTextureFactory';
 import gsap from 'gsap';
 
 export class TargetCanisterMesh {
@@ -9,6 +11,7 @@ export class TargetCanisterMesh {
   private mats = MaterialManager.getInstance();
   private fillMesh: THREE.Mesh;
   private glowRingMesh: THREE.Mesh;
+  private lockBadgeMesh: THREE.Mesh;
   private maxFillHeight = 0.95;
   private canisterRadius = 0.46;
 
@@ -24,53 +27,104 @@ export class TargetCanisterMesh {
       this.maxFillHeight,
       28
     );
-    // Shift geometry origin so scaling in Y grows upwards from the bottom
     fillGeom.translate(0, this.maxFillHeight / 2, 0);
 
     const fluidMat = this.mats.getFluidMaterial(target.color);
     this.fillMesh = new THREE.Mesh(fillGeom, fluidMat);
-    this.fillMesh.position.y = -0.42;
+    this.fillMesh.position.y = -0.40;
     this.fillMesh.scale.y = Math.max(0.04, target.currentAmount / Math.max(1, target.requiredAmount));
 
     // Glowing base ring
-    const ringGeom = new THREE.TorusGeometry(0.52, 0.05, 16, 32);
+    const ringGeom = new THREE.TorusGeometry(0.52, 0.04, 16, 32);
     const ringMat = this.mats.getBallMaterial(this.target.color);
     this.glowRingMesh = new THREE.Mesh(ringGeom, ringMat);
     this.glowRingMesh.rotation.x = Math.PI / 2;
     this.glowRingMesh.position.y = -0.42;
+
+    // Victory Lock Badge ("Locked When Correct" from reference image)
+    const lockBadgeGeom = new THREE.PlaneGeometry(0.38, 0.38);
+    const lockBadgeMat = new THREE.MeshBasicMaterial({
+      map: PipeTextureFactory.getLockTexture(),
+      transparent: true,
+      depthWrite: false,
+    });
+    this.lockBadgeMesh = new THREE.Mesh(lockBadgeGeom, lockBadgeMat);
+    this.lockBadgeMesh.position.set(0, 0.15, 0.48);
+    this.lockBadgeMesh.visible = target.currentAmount >= target.requiredAmount;
 
     this.build();
   }
 
   private build() {
     const canisterHeight = 1.05;
+    const colorDef = COLOR_PALETTE[this.target.color] || COLOR_PALETTE.red;
 
-    // Solid pedestal mount with beveled edge
-    const pedestalGeom = new THREE.CylinderGeometry(0.56, 0.64, 0.32, 28);
-    const pedestal = new THREE.Mesh(pedestalGeom, this.mats.metalCollarMaterial);
-    pedestal.position.y = -0.58;
-    pedestal.castShadow = true;
-    pedestal.receiveShadow = true;
-    this.group.add(pedestal);
+    // 1. Base Container (With Color Fill) from reference image
+    const baseCylinderGeom = new THREE.CylinderGeometry(0.52, 0.54, 0.38, 28);
+    const baseMat = new THREE.MeshStandardMaterial({
+      color: colorDef.hexNumber,
+      roughness: 0.25,
+      metalness: 0.1,
+      emissive: colorDef.emissive,
+      emissiveIntensity: 0.35,
+    });
+    const baseCylinder = new THREE.Mesh(baseCylinderGeom, baseMat);
+    baseCylinder.position.y = -0.52;
+    baseCylinder.castShadow = true;
+    baseCylinder.receiveShadow = true;
+    this.group.add(baseCylinder);
 
-    // Glowing base ring indicating the required target color
+    // Dark charcoal bottom rim collar resting on stone dais
+    const bottomRimGeom = new THREE.CylinderGeometry(0.56, 0.60, 0.14, 28);
+    const bottomRim = new THREE.Mesh(bottomRimGeom, this.mats.metalCollarMaterial);
+    bottomRim.position.y = -0.66;
+    bottomRim.castShadow = true;
+    this.group.add(bottomRim);
+
+    // Chrome lip ring between base and glass
+    const baseLipGeom = new THREE.TorusGeometry(0.53, 0.03, 16, 28);
+    const baseLip = new THREE.Mesh(baseLipGeom, this.mats.metalAccentMaterial);
+    baseLip.rotation.x = Math.PI / 2;
+    baseLip.position.y = -0.34;
+    this.group.add(baseLip);
+
+    // Glowing base ring
     this.group.add(this.glowRingMesh);
 
-    // Translucent glass beaker/collection canister
+    // 2. Transparent Glass Beaker (high visibility with contour)
     const glassGeom = new THREE.CylinderGeometry(this.canisterRadius, this.canisterRadius, canisterHeight, 28);
     const glassMesh = new THREE.Mesh(glassGeom, this.mats.pipeGlassMaterial);
     glassMesh.position.y = 0.1;
     this.group.add(glassMesh);
 
-    // Chrome intake collar at top (y = 0.68) meeting the bottom collar of the pipe above (y = 0.8)
-    const intakeCollarGeom = new THREE.CylinderGeometry(0.3, this.canisterRadius * 1.04, 0.24, 28);
+    const contourGeom = new THREE.CylinderGeometry(this.canisterRadius * 0.96, this.canisterRadius * 0.96, canisterHeight * 0.98, 28);
+    const contourMesh = new THREE.Mesh(contourGeom, this.mats.pipeGlassContourMaterial);
+    contourMesh.position.y = 0.1;
+    this.group.add(contourMesh);
+
+    const hlGeom = new THREE.CylinderGeometry(this.canisterRadius * 1.01, this.canisterRadius * 1.01, canisterHeight * 0.94, 16, 1, true, -0.2, 0.4);
+    const hlMesh = new THREE.Mesh(hlGeom, this.mats.pipeGlassHighlightMaterial);
+    hlMesh.position.set(0, 0.1, 0.02);
+    this.group.add(hlMesh);
+
+    // 3. Chrome intake collar at top (meeting pipe above)
+    const intakeCollarGeom = new THREE.CylinderGeometry(0.32, this.canisterRadius * 1.04, 0.24, 28);
     const intakeCollar = new THREE.Mesh(intakeCollarGeom, this.mats.metalCollarMaterial);
     intakeCollar.position.y = 0.68;
     intakeCollar.castShadow = true;
     this.group.add(intakeCollar);
 
+    const intakeLipGeom = new THREE.TorusGeometry(0.33, 0.03, 16, 28);
+    const intakeLip = new THREE.Mesh(intakeLipGeom, this.mats.metalAccentMaterial);
+    intakeLip.rotation.x = Math.PI / 2;
+    intakeLip.position.y = 0.78;
+    this.group.add(intakeLip);
+
     // Add fill mesh inside glass
     this.group.add(this.fillMesh);
+
+    // Add lock badge mesh
+    this.group.add(this.lockBadgeMesh);
   }
 
   public updateFill(current: number, required: number) {
@@ -80,6 +134,17 @@ export class TargetCanisterMesh {
       duration: 0.35,
       ease: 'back.out(1.6)',
     });
+
+    if (current >= required) {
+      this.lockBadgeMesh.visible = true;
+      gsap.fromTo(
+        this.lockBadgeMesh.scale,
+        { x: 0, y: 0, z: 0 },
+        { x: 1, y: 1, z: 1, duration: 0.4, ease: 'elastic.out(1, 0.5)' }
+      );
+    } else {
+      this.lockBadgeMesh.visible = false;
+    }
   }
 
   public playPulse() {
@@ -95,7 +160,6 @@ export class TargetCanisterMesh {
       ease: 'power2.out',
     });
 
-    // Section 10: Container Fill Glow flash
     gsap.to(this.glowRingMesh.scale, {
       x: 1.25,
       y: 1.25,
@@ -108,7 +172,6 @@ export class TargetCanisterMesh {
   }
 
   public playCelebration() {
-    // Joyous bounce and ring flare
     gsap.to(this.group.position, {
       y: this.group.position.y + 0.3,
       duration: 0.22,

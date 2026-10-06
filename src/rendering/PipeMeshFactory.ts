@@ -2,12 +2,13 @@ import * as THREE from 'three';
 import { MaterialManager } from './Materials';
 import { PipeNode } from '../puzzle/Pipe';
 import { COLOR_PALETTE, FlowColor } from '../puzzle/ColorSystem';
+import { PipeTextureFactory } from './PipeTextureFactory';
 
 export const CELL_SIZE = 1.6;
 export const HALF_CELL = CELL_SIZE / 2;
-const PIPE_RADIUS = 0.25;
-const COLLAR_RADIUS = 0.29;
-const COLLAR_LENGTH = 0.14;
+export const PIPE_RADIUS = 0.28;
+export const COLLAR_RADIUS = 0.35;
+export const COLLAR_LENGTH = 0.16;
 
 export class PipeMeshFactory {
   private static mats = MaterialManager.getInstance();
@@ -22,42 +23,49 @@ export class PipeMeshFactory {
     const visualGroup = new THREE.Group();
     visualGroup.name = 'visual_group';
 
-    switch (pipe.type) {
-      case 'straight':
-        this.buildStraight(visualGroup);
-        break;
-      case 'corner':
-        this.buildCorner(visualGroup);
-        break;
-      case 't_junction':
-        this.buildTJunction(visualGroup);
-        break;
-      case 'cross':
-        this.buildCross(visualGroup);
-        break;
-      case 'splitter':
-        this.buildSplitter(visualGroup);
-        break;
-      case 'merger':
-        this.buildMerger(visualGroup);
-        break;
-      case 'gate':
-        this.buildGate(visualGroup, pipe.isOpen ?? true);
-        break;
-      case 'one_way':
-        this.buildOneWay(visualGroup);
-        break;
-      case 'color_changer':
-        this.buildColorChanger(visualGroup, pipe.targetColor);
-        break;
-      case 'end':
-        this.buildEnd(visualGroup);
-        break;
-      case 'blocker':
-        this.buildBlocker(visualGroup);
-        break;
-      default:
-        this.buildStraight(visualGroup);
+    // If pipe is explicitly a cross or rotatable, check if it's a rotatable junction
+    if (pipe.type === 'cross' && !pipe.locked) {
+      this.buildRotatableJunction(visualGroup);
+    } else if (pipe.locked && pipe.type !== 'blocker') {
+      this.buildLockedPipe(visualGroup, pipe.type);
+    } else {
+      switch (pipe.type) {
+        case 'straight':
+          this.buildStraight(visualGroup);
+          break;
+        case 'corner':
+          this.buildElbow(visualGroup);
+          break;
+        case 't_junction':
+          this.buildTJunction(visualGroup);
+          break;
+        case 'cross':
+          this.buildCross(visualGroup);
+          break;
+        case 'splitter':
+          this.buildSplitter(visualGroup);
+          break;
+        case 'merger':
+          this.buildMerger(visualGroup);
+          break;
+        case 'gate':
+          this.buildGate(visualGroup, pipe.isOpen ?? true);
+          break;
+        case 'one_way':
+          this.buildOneWay(visualGroup);
+          break;
+        case 'color_changer':
+          this.buildColorFilter(visualGroup, pipe.targetColor);
+          break;
+        case 'end':
+          this.buildEnd(visualGroup);
+          break;
+        case 'blocker':
+          this.buildBlocker(visualGroup);
+          break;
+        default:
+          this.buildStraight(visualGroup);
+      }
     }
 
     group.add(visualGroup);
@@ -72,33 +80,68 @@ export class PipeMeshFactory {
   }
 
   /**
-   * Creates a multi-ring metallic flange collar with beveled lip
+   * Creates a prominent dark gunmetal connector collar with polished chrome bevel
+   * ("Metal Ring (Connector)" from reference image).
    */
-  private static createCollar(x: number, y: number, angleZ: number): THREE.Group {
+  public static createCollar(x: number, y: number, angleZ: number): THREE.Group {
     const collarGroup = new THREE.Group();
     collarGroup.position.set(x, y, 0);
     collarGroup.rotation.z = angleZ;
 
-    // Main metallic sleeve
-    const sleeveGeom = new THREE.CylinderGeometry(COLLAR_RADIUS, COLLAR_RADIUS, COLLAR_LENGTH, 24);
+    // 1. Main dark gunmetal metallic sleeve (high contrast against sky/clouds)
+    const sleeveGeom = new THREE.CylinderGeometry(COLLAR_RADIUS, COLLAR_RADIUS, COLLAR_LENGTH, 28);
     const sleeve = new THREE.Mesh(sleeveGeom, this.mats.metalCollarMaterial);
     sleeve.castShadow = true;
     collarGroup.add(sleeve);
 
-    // Outer beveled lip rim
-    const lipGeom = new THREE.TorusGeometry(COLLAR_RADIUS * 1.02, 0.03, 16, 24);
-    const lip = new THREE.Mesh(lipGeom, this.mats.metalAccentMaterial);
-    lip.rotation.x = Math.PI / 2;
-    collarGroup.add(lip);
+    // 2. Polished silver chrome beveled outer lip rim
+    const outerLipGeom = new THREE.TorusGeometry(COLLAR_RADIUS * 1.03, 0.032, 16, 28);
+    const outerLip = new THREE.Mesh(outerLipGeom, this.mats.metalAccentMaterial);
+    outerLip.rotation.x = Math.PI / 2;
+    outerLip.position.y = COLLAR_LENGTH * 0.35;
+    collarGroup.add(outerLip);
+
+    // 3. Inner gasket flange ring
+    const innerLipGeom = new THREE.TorusGeometry(COLLAR_RADIUS * 0.98, 0.024, 16, 28);
+    const innerLip = new THREE.Mesh(innerLipGeom, this.mats.metalAccentMaterial);
+    innerLip.rotation.x = Math.PI / 2;
+    innerLip.position.y = -COLLAR_LENGTH * 0.35;
+    collarGroup.add(innerLip);
 
     return collarGroup;
   }
 
-  private static buildStraight(parent: THREE.Group) {
-    // Outer translucent crystal tube
-    const tubeGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, CELL_SIZE, 24);
+  /**
+   * Creates high-visibility glass cylinder with inner refraction shading & reflection highlight
+   */
+  private static createGlassCylinder(length: number): THREE.Group {
+    const group = new THREE.Group();
+
+    // 1. Outer transparent glass tube
+    const tubeGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, length, 28);
     const tube = new THREE.Mesh(tubeGeom, this.mats.pipeGlassMaterial);
     tube.castShadow = true;
+    group.add(tube);
+
+    // 2. Inner refraction back-shadow (ensures crisp visibility against any background)
+    const contourGeom = new THREE.CylinderGeometry(PIPE_RADIUS * 0.96, PIPE_RADIUS * 0.96, length * 0.98, 28);
+    const contour = new THREE.Mesh(contourGeom, this.mats.pipeGlassContourMaterial);
+    group.add(contour);
+
+    // 3. Dual longitudinal white glossy reflection highlight strips
+    const highlightGeom = new THREE.CylinderGeometry(PIPE_RADIUS * 1.01, PIPE_RADIUS * 1.01, length * 0.92, 16, 1, true, -0.2, 0.4);
+    const highlight = new THREE.Mesh(highlightGeom, this.mats.pipeGlassHighlightMaterial);
+    highlight.position.z = 0.02;
+    group.add(highlight);
+
+    return group;
+  }
+
+  /**
+   * 1. Straight Pipe (0° / 90°)
+   */
+  private static buildStraight(parent: THREE.Group) {
+    const tube = this.createGlassCylinder(CELL_SIZE);
     parent.add(tube);
 
     // Collars at top (+Y) and bottom (-Y)
@@ -106,88 +149,303 @@ export class PipeMeshFactory {
     parent.add(this.createCollar(0, -HALF_CELL + COLLAR_LENGTH / 2, 0));
   }
 
-  private static buildCorner(parent: THREE.Group) {
-    // Connects up (+Y) and right (+X) at rotation 0
-    // Vertical leg
-    const vertGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, HALF_CELL, 24);
-    const vert = new THREE.Mesh(vertGeom, this.mats.pipeGlassMaterial);
-    vert.position.set(0, HALF_CELL / 2, 0);
-    vert.castShadow = true;
-    parent.add(vert);
+  /**
+   * 2. Elbow Pipe (90°)
+   * Continuous smooth 90° glass torus bend, matching reference image!
+   */
+  private static buildElbow(parent: THREE.Group) {
+    const cornerGroup = new THREE.Group();
 
-    // Horizontal leg
-    const horizGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, HALF_CELL, 24);
-    const horiz = new THREE.Mesh(horizGeom, this.mats.pipeGlassMaterial);
-    horiz.position.set(HALF_CELL / 2, 0, 0);
-    horiz.rotation.z = Math.PI / 2;
-    horiz.castShadow = true;
-    parent.add(horiz);
+    // Radius of curvature for the elbow
+    const bendRadius = HALF_CELL;
 
-    // Smooth elbow corner sphere at junction
-    const elbowGeom = new THREE.SphereGeometry(PIPE_RADIUS * 1.02, 24, 24);
-    const elbow = new THREE.Mesh(elbowGeom, this.mats.pipeGlassMaterial);
-    elbow.castShadow = true;
-    parent.add(elbow);
+    // 1. Smooth 90° glass torus arc curving from (+Y) to (+X)
+    const torusGeom = new THREE.TorusGeometry(bendRadius, PIPE_RADIUS, 28, 36, Math.PI / 2);
+    const torusMesh = new THREE.Mesh(torusGeom, this.mats.pipeGlassMaterial);
+    // Torus default is in XY plane centered at (0,0) starting from angle 0 (X axis) to PI/2 (Y axis).
+    // Center at (HALF_CELL, HALF_CELL) and rotate so arc sweeps from (0, HALF_CELL) down to (HALF_CELL, 0)
+    torusMesh.position.set(HALF_CELL, HALF_CELL, 0);
+    torusMesh.rotation.z = Math.PI;
+    torusMesh.castShadow = true;
+    cornerGroup.add(torusMesh);
+
+    // 2. Inner refraction back-shadow for the bend
+    const contourTorusGeom = new THREE.TorusGeometry(bendRadius, PIPE_RADIUS * 0.95, 24, 32, Math.PI / 2);
+    const contourMesh = new THREE.Mesh(contourTorusGeom, this.mats.pipeGlassContourMaterial);
+    contourMesh.position.set(HALF_CELL, HALF_CELL, 0);
+    contourMesh.rotation.z = Math.PI;
+    cornerGroup.add(contourMesh);
+
+    // 3. Highlight strip on outer curved rim
+    const hlTorusGeom = new THREE.TorusGeometry(bendRadius, PIPE_RADIUS * 1.01, 16, 28, Math.PI / 2);
+    const hlMesh = new THREE.Mesh(hlTorusGeom, this.mats.pipeGlassHighlightMaterial);
+    hlMesh.position.set(HALF_CELL, HALF_CELL, 0.02);
+    hlMesh.rotation.z = Math.PI;
+    cornerGroup.add(hlMesh);
+
+    parent.add(cornerGroup);
 
     // Collars at top (+Y) and right (+X)
     parent.add(this.createCollar(0, HALF_CELL - COLLAR_LENGTH / 2, 0));
     parent.add(this.createCollar(HALF_CELL - COLLAR_LENGTH / 2, 0, Math.PI / 2));
   }
 
+  /**
+   * 3. T Pipe (3-way)
+   */
   private static buildTJunction(parent: THREE.Group) {
-    // Connects up (+Y), left (-X), right (+X) at rotation 0
-    const topGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, HALF_CELL, 24);
-    const top = new THREE.Mesh(topGeom, this.mats.pipeGlassMaterial);
-    top.position.set(0, HALF_CELL / 2, 0);
-    top.castShadow = true;
-    parent.add(top);
+    // Top leg (+Y)
+    const topLeg = this.createGlassCylinder(HALF_CELL);
+    topLeg.position.set(0, HALF_CELL / 2, 0);
+    parent.add(topLeg);
 
-    const horizGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, CELL_SIZE, 24);
-    const horiz = new THREE.Mesh(horizGeom, this.mats.pipeGlassMaterial);
-    horiz.rotation.z = Math.PI / 2;
-    horiz.castShadow = true;
-    parent.add(horiz);
+    // Horizontal full cross tube (left -X to right +X)
+    const horizTube = this.createGlassCylinder(CELL_SIZE);
+    horizTube.rotation.z = Math.PI / 2;
+    parent.add(horizTube);
 
-    const centerGeom = new THREE.SphereGeometry(PIPE_RADIUS * 1.02, 24, 24);
-    parent.add(new THREE.Mesh(centerGeom, this.mats.pipeGlassMaterial));
+    // Center junction junction sphere
+    const centerGeom = new THREE.SphereGeometry(PIPE_RADIUS * 1.04, 28, 28);
+    const centerSphere = new THREE.Mesh(centerGeom, this.mats.pipeGlassMaterial);
+    parent.add(centerSphere);
 
+    // Collars on 3 open ports
     parent.add(this.createCollar(0, HALF_CELL - COLLAR_LENGTH / 2, 0));
     parent.add(this.createCollar(-HALF_CELL + COLLAR_LENGTH / 2, 0, Math.PI / 2));
     parent.add(this.createCollar(HALF_CELL - COLLAR_LENGTH / 2, 0, Math.PI / 2));
   }
 
+  /**
+   * 4. Cross Pipe (4-way)
+   */
   private static buildCross(parent: THREE.Group) {
-    const vertGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, CELL_SIZE, 24);
-    const vert = new THREE.Mesh(vertGeom, this.mats.pipeGlassMaterial);
-    vert.castShadow = true;
-    parent.add(vert);
+    const vertTube = this.createGlassCylinder(CELL_SIZE);
+    parent.add(vertTube);
 
-    const horizGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, CELL_SIZE, 24);
-    const horiz = new THREE.Mesh(horizGeom, this.mats.pipeGlassMaterial);
-    horiz.rotation.z = Math.PI / 2;
-    horiz.castShadow = true;
-    parent.add(horiz);
+    const horizTube = this.createGlassCylinder(CELL_SIZE);
+    horizTube.rotation.z = Math.PI / 2;
+    parent.add(horizTube);
 
-    const centerGeom = new THREE.SphereGeometry(PIPE_RADIUS * 1.06, 24, 24);
+    const centerGeom = new THREE.SphereGeometry(PIPE_RADIUS * 1.06, 28, 28);
     parent.add(new THREE.Mesh(centerGeom, this.mats.pipeGlassMaterial));
 
+    // Collars on all 4 open ports
     parent.add(this.createCollar(0, HALF_CELL - COLLAR_LENGTH / 2, 0));
     parent.add(this.createCollar(0, -HALF_CELL + COLLAR_LENGTH / 2, 0));
     parent.add(this.createCollar(-HALF_CELL + COLLAR_LENGTH / 2, 0, Math.PI / 2));
     parent.add(this.createCollar(HALF_CELL - COLLAR_LENGTH / 2, 0, Math.PI / 2));
   }
 
+  /**
+   * 5. Rotatable Junction (Manual Rotate)
+   * Cobalt blue cube with circular white rotation badge (↻) and 4 pipe ports
+   * exactly matching the reference image!
+   */
+  public static buildRotatableJunction(parent: THREE.Group) {
+    const junctionGroup = new THREE.Group();
+    junctionGroup.name = 'rotatable_junction';
+
+    // 1. Short connecting glass stubs for each of the 4 directions
+    const stubLen = (CELL_SIZE - 0.72) / 2;
+    const topStub = this.createGlassCylinder(stubLen);
+    topStub.position.y = HALF_CELL - stubLen / 2;
+    junctionGroup.add(topStub);
+
+    const botStub = this.createGlassCylinder(stubLen);
+    botStub.position.y = -HALF_CELL + stubLen / 2;
+    junctionGroup.add(botStub);
+
+    const leftStub = this.createGlassCylinder(stubLen);
+    leftStub.rotation.z = Math.PI / 2;
+    leftStub.position.x = -HALF_CELL + stubLen / 2;
+    junctionGroup.add(leftStub);
+
+    const rightStub = this.createGlassCylinder(stubLen);
+    rightStub.rotation.z = Math.PI / 2;
+    rightStub.position.x = HALF_CELL - stubLen / 2;
+    junctionGroup.add(rightStub);
+
+    // 2. Dark charcoal metal connector collars on all 4 open ports
+    junctionGroup.add(this.createCollar(0, HALF_CELL - COLLAR_LENGTH / 2, 0));
+    junctionGroup.add(this.createCollar(0, -HALF_CELL + COLLAR_LENGTH / 2, 0));
+    junctionGroup.add(this.createCollar(-HALF_CELL + COLLAR_LENGTH / 2, 0, Math.PI / 2));
+    junctionGroup.add(this.createCollar(HALF_CELL - COLLAR_LENGTH / 2, 0, Math.PI / 2));
+
+    // 3. Central Cobalt Blue Cube (0.72 x 0.72 x 0.68)
+    const cubeGeom = new THREE.BoxGeometry(0.72, 0.72, 0.64);
+    const cubeMesh = new THREE.Mesh(cubeGeom, this.mats.junctionBlueMaterial);
+    cubeMesh.castShadow = true;
+    junctionGroup.add(cubeMesh);
+
+    // 4. Dark graphite outer bezel frame around the cube
+    const bezelGeom = new THREE.BoxGeometry(0.76, 0.76, 0.58);
+    const bezelMesh = new THREE.Mesh(bezelGeom, this.mats.junctionDarkMaterial);
+    bezelMesh.position.z = -0.02;
+    junctionGroup.add(bezelMesh);
+
+    // 5. Polished chrome corner rivets / accents
+    const rivetGeom = new THREE.CylinderGeometry(0.04, 0.04, 0.04, 16);
+    const rivetMat = this.mats.metalAccentMaterial;
+    [
+      [-0.28, 0.28],
+      [0.28, 0.28],
+      [-0.28, -0.28],
+      [0.28, -0.28],
+    ].forEach(([rx, ry]) => {
+      const rivet = new THREE.Mesh(rivetGeom, rivetMat);
+      rivet.rotation.x = Math.PI / 2;
+      rivet.position.set(rx, ry, 0.33);
+      junctionGroup.add(rivet);
+    });
+
+    // 6. Front Circular White Rotation Badge (↻) with cyan glow
+    const badgeGeom = new THREE.PlaneGeometry(0.48, 0.48);
+    const badgeMat = new THREE.MeshBasicMaterial({
+      map: PipeTextureFactory.getRotationBadgeTexture(),
+      transparent: true,
+      depthWrite: false,
+    });
+    const badgeMesh = new THREE.Mesh(badgeGeom, badgeMat);
+    badgeMesh.position.z = 0.33;
+    junctionGroup.add(badgeMesh);
+
+    parent.add(junctionGroup);
+  }
+
+  /**
+   * 6. Locked Pipe ("Unlocks Later" from reference image)
+   */
+  private static buildLockedPipe(parent: THREE.Group, baseType: string) {
+    if (baseType === 'corner') {
+      this.buildElbow(parent);
+    } else {
+      this.buildStraight(parent);
+    }
+
+    // Padlock block in center
+    const lockGeom = new THREE.PlaneGeometry(0.48, 0.48);
+    const lockMat = new THREE.MeshBasicMaterial({
+      map: PipeTextureFactory.getLockTexture(),
+      transparent: true,
+      depthWrite: false,
+    });
+    const lockMesh = new THREE.Mesh(lockGeom, lockMat);
+    lockMesh.position.z = 0.22;
+    parent.add(lockMesh);
+  }
+
+  /**
+   * 7. One Way Pipe ("Flow in One Direction" from reference image)
+   */
+  private static buildOneWay(parent: THREE.Group) {
+    this.buildStraight(parent);
+
+    // Glowing neon arrow pointing down in direction of flow
+    const arrowGroup = new THREE.Group();
+    arrowGroup.position.z = 0.02;
+
+    const arrowMat = new THREE.MeshBasicMaterial({
+      color: 0x38bdf8,
+      transparent: true,
+      opacity: 0.95,
+    });
+
+    [-0.22, 0.12].forEach((yPos) => {
+      const shaftGeom = new THREE.CylinderGeometry(0.04, 0.04, 0.18, 16);
+      const shaft = new THREE.Mesh(shaftGeom, arrowMat);
+      shaft.position.set(0, yPos + 0.08, 0);
+      arrowGroup.add(shaft);
+
+      const headGeom = new THREE.ConeGeometry(0.12, 0.16, 16);
+      const head = new THREE.Mesh(headGeom, arrowMat);
+      head.rotation.z = Math.PI; // Pointing down
+      head.position.set(0, yPos - 0.06, 0);
+      arrowGroup.add(head);
+    });
+
+    parent.add(arrowGroup);
+  }
+
+  /**
+   * 8. Color Filter ("Only Allow Specific Color" from reference image)
+   */
+  private static buildColorFilter(parent: THREE.Group, targetColor: FlowColor = 'yellow') {
+    this.buildStraight(parent);
+
+    const colorDef = COLOR_PALETTE[targetColor] || COLOR_PALETTE.yellow;
+
+    // Glowing colored optical ring band in center
+    const filterBandGeom = new THREE.CylinderGeometry(COLLAR_RADIUS * 1.08, COLLAR_RADIUS * 1.08, 0.36, 28);
+    const filterBandMat = new THREE.MeshStandardMaterial({
+      color: colorDef.hexNumber,
+      emissive: colorDef.emissive,
+      emissiveIntensity: 0.8,
+      metalness: 0.7,
+      roughness: 0.2,
+    });
+    const filterBand = new THREE.Mesh(filterBandGeom, filterBandMat);
+    filterBand.castShadow = true;
+    parent.add(filterBand);
+
+    // Chrome collar rims sandwiching the filter band
+    const rimGeom = new THREE.TorusGeometry(COLLAR_RADIUS * 1.1, 0.03, 16, 28);
+    const topRim = new THREE.Mesh(rimGeom, this.mats.metalAccentMaterial);
+    topRim.rotation.x = Math.PI / 2;
+    topRim.position.y = 0.18;
+    parent.add(topRim);
+
+    const botRim = topRim.clone();
+    botRim.position.y = -0.18;
+    parent.add(botRim);
+
+    // Glowing internal color crystal
+    const crystalGeom = new THREE.SphereGeometry(0.18, 24, 24);
+    const crystalMat = this.mats.getBallMaterial(targetColor);
+    const crystal = new THREE.Mesh(crystalGeom, crystalMat);
+    crystal.position.z = 0.04;
+    parent.add(crystal);
+  }
+
+  /**
+   * 9. Blocker ("Stops Flow" from reference image)
+   */
+  private static buildBlocker(parent: THREE.Group) {
+    const baseGeom = new THREE.BoxGeometry(CELL_SIZE * 0.82, CELL_SIZE * 0.82, 0.28);
+    const baseMat = new THREE.MeshStandardMaterial({
+      color: 0x1e293b,
+      metalness: 0.85,
+      roughness: 0.35,
+    });
+    const base = new THREE.Mesh(baseGeom, baseMat);
+    base.castShadow = true;
+    parent.add(base);
+
+    // Red square with white X badge
+    const badgeGeom = new THREE.PlaneGeometry(0.55, 0.55);
+    const badgeMat = new THREE.MeshBasicMaterial({
+      map: PipeTextureFactory.getBlockerTexture(),
+      transparent: true,
+      depthWrite: false,
+    });
+    const badge = new THREE.Mesh(badgeGeom, badgeMat);
+    badge.position.z = 0.16;
+    parent.add(badge);
+  }
+
+  /**
+   * 10. Splitter ("Divides Flow" from reference image)
+   */
   private static buildSplitter(parent: THREE.Group) {
     this.buildTJunction(parent);
 
-    // Glowing splitter icon badge in center (matches reference photo!)
-    const hubGeom = new THREE.CylinderGeometry(0.34, 0.34, 0.08, 32);
+    // Violet glowing splitter hub badge in center
+    const hubGeom = new THREE.CylinderGeometry(0.36, 0.36, 0.08, 32);
     const hubMat = new THREE.MeshStandardMaterial({
-      color: 0x2563eb,
+      color: 0x8b5cf6,
       metalness: 0.85,
       roughness: 0.2,
-      emissive: 0x1d4ed8,
-      emissiveIntensity: 0.4,
+      emissive: 0x6d28d9,
+      emissiveIntensity: 0.5,
     });
     const hub = new THREE.Mesh(hubGeom, hubMat);
     hub.rotation.x = Math.PI / 2;
@@ -195,30 +453,31 @@ export class PipeMeshFactory {
     parent.add(hub);
 
     // Split arrow indicator ring
-    const ringGeom = new THREE.TorusGeometry(0.2, 0.035, 16, 32);
-    const ring = new THREE.Mesh(ringGeom, this.mats.metalCollarMaterial);
+    const ringGeom = new THREE.TorusGeometry(0.22, 0.035, 16, 32);
+    const ring = new THREE.Mesh(ringGeom, this.mats.metalAccentMaterial);
     ring.position.z = 0.28;
     parent.add(ring);
   }
 
+  /**
+   * 11. Merger ("Combines Flow" from reference image)
+   */
   private static buildMerger(parent: THREE.Group) {
-    const horizGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, CELL_SIZE, 24);
-    const horiz = new THREE.Mesh(horizGeom, this.mats.pipeGlassMaterial);
-    horiz.rotation.z = Math.PI / 2;
-    parent.add(horiz);
+    const horizTube = this.createGlassCylinder(CELL_SIZE);
+    horizTube.rotation.z = Math.PI / 2;
+    parent.add(horizTube);
 
-    const botGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, HALF_CELL, 24);
-    const bot = new THREE.Mesh(botGeom, this.mats.pipeGlassMaterial);
-    bot.position.set(0, -HALF_CELL / 2, 0);
-    parent.add(bot);
+    const botLeg = this.createGlassCylinder(HALF_CELL);
+    botLeg.position.set(0, -HALF_CELL / 2, 0);
+    parent.add(botLeg);
 
-    const hubGeom = new THREE.CylinderGeometry(0.34, 0.34, 0.08, 32);
+    const hubGeom = new THREE.CylinderGeometry(0.36, 0.36, 0.08, 32);
     const hubMat = new THREE.MeshStandardMaterial({
-      color: 0x9333ea,
+      color: 0x0284c7,
       metalness: 0.85,
       roughness: 0.2,
-      emissive: 0x7e22ce,
-      emissiveIntensity: 0.4,
+      emissive: 0x0369a1,
+      emissiveIntensity: 0.5,
     });
     const hub = new THREE.Mesh(hubGeom, hubMat);
     hub.rotation.x = Math.PI / 2;
@@ -230,11 +489,14 @@ export class PipeMeshFactory {
     parent.add(this.createCollar(0, -HALF_CELL + COLLAR_LENGTH / 2, 0));
   }
 
+  /**
+   * 12. Gate Valve
+   */
   private static buildGate(parent: THREE.Group, isOpen: boolean) {
     this.buildStraight(parent);
 
     const mountGeom = new THREE.CylinderGeometry(0.08, 0.08, 0.2, 16);
-    const mount = new THREE.Mesh(mountGeom, this.mats.metalAccentMaterial);
+    const mount = new THREE.Mesh(mountGeom, this.mats.metalCollarMaterial);
     mount.rotation.x = Math.PI / 2;
     mount.position.z = 0.16;
     parent.add(mount);
@@ -248,13 +510,14 @@ export class PipeMeshFactory {
       color: isOpen ? 0x10b981 : 0xef4444,
       metalness: 0.75,
       roughness: 0.2,
+      emissive: isOpen ? 0x059669 : 0xdc2626,
+      emissiveIntensity: 0.3,
     });
     const rim = new THREE.Mesh(rimGeom, rimMat);
-    rim.name = 'valve_rim';
     wheelGroup.add(rim);
 
     const spoke1Geom = new THREE.CylinderGeometry(0.02, 0.02, 0.44, 8);
-    const spoke1 = new THREE.Mesh(spoke1Geom, this.mats.metalCollarMaterial);
+    const spoke1 = new THREE.Mesh(spoke1Geom, this.mats.metalAccentMaterial);
     wheelGroup.add(spoke1);
 
     const spoke2 = spoke1.clone();
@@ -264,82 +527,16 @@ export class PipeMeshFactory {
     parent.add(wheelGroup);
   }
 
-  private static buildOneWay(parent: THREE.Group) {
-    this.buildStraight(parent);
-
-    const arrowMat = new THREE.MeshStandardMaterial({
-      color: 0x60a5fa,
-      emissive: 0x2563eb,
-      emissiveIntensity: 0.9,
-      metalness: 0.5,
-      roughness: 0.2,
-    });
-
-    [-0.2, 0.2].forEach((yPos) => {
-      const coneGeom = new THREE.ConeGeometry(0.12, 0.18, 16);
-      const cone = new THREE.Mesh(coneGeom, arrowMat);
-      cone.rotation.z = Math.PI; // pointing down
-      cone.position.set(0, yPos, 0.05);
-      parent.add(cone);
-    });
-  }
-
-  private static buildColorChanger(parent: THREE.Group, targetColor: FlowColor = 'purple') {
-    this.buildStraight(parent);
-
-    const colorDef = COLOR_PALETTE[targetColor] || COLOR_PALETTE.purple;
-
-    const boxGeom = new THREE.BoxGeometry(0.48, 0.48, 0.48);
-    const boxMat = new THREE.MeshPhysicalMaterial({
-      color: colorDef.hexNumber,
-      transparent: true,
-      opacity: 0.85,
-      transmission: 0.75,
-      roughness: 0.08,
-      metalness: 0.1,
-      emissive: colorDef.emissive,
-      emissiveIntensity: 0.7,
-    });
-    const prism = new THREE.Mesh(boxGeom, boxMat);
-    prism.position.z = 0.08;
-    parent.add(prism);
-
-    const frameGeom = new THREE.BoxGeometry(0.52, 0.52, 0.1);
-    const wireMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      metalness: 0.9,
-      roughness: 0.2,
-      wireframe: true,
-    });
-    const frame = new THREE.Mesh(frameGeom, wireMat);
-    frame.position.z = 0.08;
-    parent.add(frame);
-  }
-
+  /**
+   * 13. End Cap
+   */
   private static buildEnd(parent: THREE.Group) {
-    const tubeGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, HALF_CELL, 24);
-    const tube = new THREE.Mesh(tubeGeom, this.mats.pipeGlassMaterial);
+    const tube = this.createGlassCylinder(HALF_CELL);
     tube.position.set(0, HALF_CELL / 2, 0);
     parent.add(tube);
 
     const capGeom = new THREE.SphereGeometry(PIPE_RADIUS, 24, 24);
-    parent.add(new THREE.Mesh(capGeom, this.mats.metalAccentMaterial));
+    parent.add(new THREE.Mesh(capGeom, this.mats.metalCollarMaterial));
     parent.add(this.createCollar(0, HALF_CELL - COLLAR_LENGTH / 2, 0));
-  }
-
-  private static buildBlocker(parent: THREE.Group) {
-    const baseGeom = new THREE.BoxGeometry(CELL_SIZE * 0.85, CELL_SIZE * 0.85, 0.3);
-    const baseMat = new THREE.MeshStandardMaterial({
-      color: 0x334155,
-      roughness: 0.7,
-      metalness: 0.3,
-    });
-    const base = new THREE.Mesh(baseGeom, baseMat);
-    parent.add(base);
-
-    const lockGeom = new THREE.TorusGeometry(0.2, 0.04, 16, 24);
-    const lock = new THREE.Mesh(lockGeom, this.mats.metalCollarMaterial);
-    lock.position.z = 0.2;
-    parent.add(lock);
   }
 }

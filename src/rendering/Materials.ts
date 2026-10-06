@@ -4,86 +4,133 @@ import { COLOR_PALETTE, FlowColor } from '../puzzle/ColorSystem';
 export class MaterialManager {
   private static instance: MaterialManager;
 
-  // Ultra-clear crystal glass pipe materials
+  // Ultra-clear high-visibility crystal glass pipe materials
   public pipeGlassMaterial: THREE.MeshPhysicalMaterial;
   public pipeGlassActiveMaterial: THREE.MeshPhysicalMaterial;
+  public pipeGlassContourMaterial: THREE.MeshStandardMaterial;
+  public pipeGlassHighlightMaterial: THREE.MeshBasicMaterial;
 
-  // Polished silver chrome & metal connector flanges
+  // Dark gunmetal connector rings & polished silver chrome flanges
   public metalCollarMaterial: THREE.MeshStandardMaterial;
   public metalAccentMaterial: THREE.MeshStandardMaterial;
+
+  // Cobalt blue junction box material
+  public junctionBlueMaterial: THREE.MeshPhysicalMaterial;
+  public junctionDarkMaterial: THREE.MeshStandardMaterial;
 
   // Platform & ground materials
   public platformMaterial: THREE.MeshStandardMaterial;
 
-  // Pre-cached high-quality PBR glossy ball materials (from Ball Asset Guide)
+  // Pre-cached high-quality PBR glossy ball materials (from Ball Model Guide)
   public ballMaterials: Map<FlowColor, THREE.MeshPhysicalMaterial> = new Map();
   // Pre-cached target fluid materials
   public fluidMaterials: Map<FlowColor, THREE.MeshPhysicalMaterial> = new Map();
 
   private constructor() {
-    // Crystal-clear translucent glass for pipes (so internal colored balls shine through!)
+    // 1. Transparent Glass with clear silhouette & refraction
+    // Tuned so internal colored balls pop while the glass cylinder remains distinctly visible against any background
     this.pipeGlassMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xf8fafc,
+      color: 0xffffff,
       transparent: true,
-      opacity: 0.58,
-      transmission: 0.90,
-      roughness: 0.04,
+      opacity: 0.52,
+      transmission: 0.52, // Balanced transmission ensures glass is visible even over bright clouds
+      roughness: 0.05,
       metalness: 0.02,
-      ior: 1.46,
+      ior: 1.52,
+      thickness: 0.65,
+      attenuationColor: new THREE.Color(0x94a3b8),
+      attenuationDistance: 1.0,
       clearcoat: 1.0,
-      clearcoatRoughness: 0.03,
+      clearcoatRoughness: 0.02,
       depthWrite: false,
     });
 
     this.pipeGlassActiveMaterial = new THREE.MeshPhysicalMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.65,
-      transmission: 0.88,
-      roughness: 0.03,
+      opacity: 0.68,
+      transmission: 0.45,
+      roughness: 0.04,
       metalness: 0.02,
-      ior: 1.48,
+      ior: 1.52,
       clearcoat: 1.0,
       clearcoatRoughness: 0.02,
       depthWrite: false,
     });
 
-    // Bright polished silver chrome couplings
-    this.metalCollarMaterial = new THREE.MeshStandardMaterial({
-      color: 0xe2e8f0,
-      metalness: 0.92,
-      roughness: 0.14,
+    // 2. Subtle glass contour / inner refraction back-silhouette (guarantees pipe visibility over bright sky/clouds)
+    this.pipeGlassContourMaterial = new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      transparent: true,
+      opacity: 0.18,
+      side: THREE.BackSide,
+      roughness: 0.2,
+      depthWrite: false,
     });
 
-    // Dark sleek titanium accent for base pedestals
-    this.metalAccentMaterial = new THREE.MeshStandardMaterial({
-      color: 0x334155,
+    // 3. Crisp white longitudinal glass reflection highlight strip
+    this.pipeGlassHighlightMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+
+    // 4. Dark charcoal / gunmetal connector rings (Metal Ring / Connector from reference image)
+    this.metalCollarMaterial = new THREE.MeshStandardMaterial({
+      color: 0x1e293b,
       metalness: 0.88,
       roughness: 0.22,
     });
 
-    // Warm beveled stone podium pedestal
+    // 5. Polished silver chrome beveled rim flange
+    this.metalAccentMaterial = new THREE.MeshStandardMaterial({
+      color: 0xe2e8f0,
+      metalness: 0.95,
+      roughness: 0.10,
+    });
+
+    // 6. Cobalt blue glossy cube for Rotatable Junction
+    this.junctionBlueMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0x0284c7,
+      metalness: 0.12,
+      roughness: 0.18,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.05,
+      emissive: 0x0369a1,
+      emissiveIntensity: 0.35,
+    });
+
+    // 7. Dark rubberized bezel trim for junction
+    this.junctionDarkMaterial = new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      metalness: 0.82,
+      roughness: 0.35,
+    });
+
+    // 8. Stone podium pedestal
     this.platformMaterial = new THREE.MeshStandardMaterial({
       color: 0x94a3b8,
       roughness: 0.45,
       metalness: 0.15,
     });
 
-    // Create high-gloss, premium PBR spheres for each color matching Ball Asset Guide
+    // 9. High-gloss, high-specular spheres with subtle glow (Ball Model in reference)
     (Object.keys(COLOR_PALETTE) as FlowColor[]).forEach((color) => {
       const def = COLOR_PALETTE[color];
       this.ballMaterials.set(
         color,
         new THREE.MeshPhysicalMaterial({
           color: def.hexNumber,
-          metalness: 0.02,
-          roughness: 0.18,
-          clearcoat: 0.5,
-          clearcoatRoughness: 0.1,
+          metalness: 0.04,
+          roughness: 0.12,
+          clearcoat: 1.0,
+          clearcoatRoughness: 0.08,
           transmission: 0.0,
           emissive: def.hexNumber,
-          emissiveIntensity: 0.22,
-          reflectivity: 0.65,
+          emissiveIntensity: 0.28,
+          reflectivity: 0.85,
         })
       );
 
@@ -92,8 +139,8 @@ export class MaterialManager {
         new THREE.MeshPhysicalMaterial({
           color: def.hexNumber,
           transparent: true,
-          opacity: 0.94,
-          transmission: 0.25,
+          opacity: 0.95,
+          transmission: 0.22,
           roughness: 0.08,
           emissive: def.hexNumber,
           emissiveIntensity: 0.35,

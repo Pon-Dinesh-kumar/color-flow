@@ -20,44 +20,70 @@ export class SourceCanisterMesh {
 
   private build() {
     const canisterRadius = 0.44;
-    const bodyHeight = 0.9;
+    const bodyHeight = 0.88;
     const colorDef = COLOR_PALETTE[this.source.color];
 
-    // Translucent glass hopper cylinder
+    // 1. Transparent glass cylinder hopper (high visibility with contour)
     const glassGeom = new THREE.CylinderGeometry(canisterRadius, canisterRadius, bodyHeight, 28);
     const glassMesh = new THREE.Mesh(glassGeom, this.mats.pipeGlassMaterial);
     glassMesh.position.y = 0.05;
     this.group.add(glassMesh);
 
-    // Polished metallic top cap with beveled rim
+    // Inner contour for glass hopper visibility against sky
+    const contourGeom = new THREE.CylinderGeometry(canisterRadius * 0.96, canisterRadius * 0.96, bodyHeight * 0.98, 28);
+    const contourMesh = new THREE.Mesh(contourGeom, this.mats.pipeGlassContourMaterial);
+    contourMesh.position.y = 0.05;
+    this.group.add(contourMesh);
+
+    // Longitudinal reflection highlight
+    const hlGeom = new THREE.CylinderGeometry(canisterRadius * 1.01, canisterRadius * 1.01, bodyHeight * 0.95, 16, 1, true, -0.2, 0.4);
+    const hlMesh = new THREE.Mesh(hlGeom, this.mats.pipeGlassHighlightMaterial);
+    hlMesh.position.set(0, 0.05, 0.02);
+    this.group.add(hlMesh);
+
+    // 2. Top Cap (Metal/Plastic from reference diagram)
     const topCapGeom = new THREE.CylinderGeometry(canisterRadius * 1.08, canisterRadius * 1.08, 0.14, 28);
     const topCap = new THREE.Mesh(topCapGeom, this.mats.metalCollarMaterial);
     topCap.position.y = 0.05 + bodyHeight / 2 + 0.07;
     topCap.castShadow = true;
     this.group.add(topCap);
 
+    // Chrome bevel rim for top cap
+    const topRimGeom = new THREE.TorusGeometry(canisterRadius * 1.08, 0.03, 16, 28);
+    const topRim = new THREE.Mesh(topRimGeom, this.mats.metalAccentMaterial);
+    topRim.rotation.x = Math.PI / 2;
+    topRim.position.y = topCap.position.y + 0.06;
+    this.group.add(topRim);
+
     // Dome handle on top
     const handleGeom = new THREE.SphereGeometry(0.12, 16, 16);
     const handle = new THREE.Mesh(handleGeom, this.mats.metalAccentMaterial);
-    handle.position.y = topCap.position.y + 0.1;
+    handle.position.y = topCap.position.y + 0.12;
     this.group.add(handle);
 
-    // Glowing color identification ring under top cap
+    // Color identification ring under top cap
     const glowRingGeom = new THREE.TorusGeometry(canisterRadius * 1.02, 0.035, 16, 28);
     const glowRingMat = this.mats.getBallMaterial(this.source.color);
     const glowRing = new THREE.Mesh(glowRingGeom, glowRingMat);
     glowRing.rotation.x = Math.PI / 2;
-    glowRing.position.y = topCap.position.y - 0.07;
+    glowRing.position.y = topCap.position.y - 0.08;
     this.group.add(glowRing);
 
-    // Bottom feed funnel docking cleanly into the top collar of the pipe below (y = -0.8)
-    const funnelGeom = new THREE.CylinderGeometry(canisterRadius * 1.04, 0.28, 0.42, 28);
+    // 3. Bottom Funnel (To Pipe) - Inverted conical funnel tapering into pipe connector
+    const funnelGeom = new THREE.CylinderGeometry(canisterRadius * 1.05, 0.28, 0.44, 28);
     const funnel = new THREE.Mesh(funnelGeom, this.mats.metalCollarMaterial);
-    funnel.position.y = -0.58;
+    funnel.position.y = -0.56;
     funnel.castShadow = true;
     this.group.add(funnel);
 
-    // Stacked preview balls inside the glass hopper (Section 3: 32x32 UV Sphere)
+    // Metal ring connector at funnel tip
+    const funnelRimGeom = new THREE.TorusGeometry(canisterRadius * 1.06, 0.03, 16, 28);
+    const funnelRim = new THREE.Mesh(funnelRimGeom, this.mats.metalAccentMaterial);
+    funRimPosition: funnelRim.rotation.x = Math.PI / 2;
+    funnelRim.position.y = -0.36;
+    this.group.add(funnelRim);
+
+    // 4. Stacked preview balls inside the hopper (High-specular glossy PBR spheres)
     const ballMat = this.mats.getBallMaterial(this.source.color);
     const ballGeom = new THREE.SphereGeometry(0.135, 32, 32);
 

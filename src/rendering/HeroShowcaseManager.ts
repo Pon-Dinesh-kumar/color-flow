@@ -441,9 +441,15 @@ export class HeroShowcaseManager {
     ];
 
     curves.forEach((curve) => {
-      const geom = new THREE.TubeGeometry(curve, 36, pipeRadius, 20, false);
+      const geom = new THREE.TubeGeometry(curve, 36, pipeRadius, 24, false);
       const tubeMesh = new THREE.Mesh(geom, glassMat);
+      tubeMesh.castShadow = true;
       this.group.add(tubeMesh);
+
+      // Inner refraction contour for high visibility against sky background
+      const contourGeom = new THREE.TubeGeometry(curve, 36, pipeRadius * 0.95, 24, false);
+      const contourMesh = new THREE.Mesh(contourGeom, this.mats.pipeGlassContourMaterial);
+      this.group.add(contourMesh);
 
       // Add chrome collar rings at connection joints
       const startPt = curve.getPoint(0);
