@@ -2,22 +2,17 @@ import React from 'react';
 
 interface LevelPillProps {
   levelNumber: number;
-  title?: string;
 }
 
-export const LevelPill: React.FC<LevelPillProps> = ({ levelNumber, title }) => {
+export const LevelPill: React.FC<LevelPillProps> = ({ levelNumber }) => {
   return (
-    <div className="flex flex-col items-center select-none pointer-events-none">
-      <div className="min-w-[150px] md:min-w-[180px] py-2 px-6 rounded-full bg-slate-900/85 backdrop-blur-xl border border-white/20 shadow-[0_8px_24px_rgba(0,0,0,0.5)] flex items-center justify-center">
-        <span className="text-white font-black text-lg md:text-xl tracking-wider drop-shadow-md">
+    <div className="flex items-start justify-center select-none pointer-events-none">
+      <div className="relative mt-0.5 overflow-hidden min-w-[100px] md:min-w-[120px] py-1.5 px-3 rounded-full bg-gradient-to-b from-sky-300 via-blue-500 to-blue-700 border-2 border-white/85 shadow-[0_5px_14px_rgba(16,57,133,0.4),inset_0_2px_4px_rgba(255,255,255,0.75)] flex items-center justify-center">
+        <span className="absolute inset-x-4 top-0.5 h-1/2 rounded-full bg-gradient-to-b from-white/40 to-transparent" />
+        <span className="relative text-white font-black text-sm md:text-base tracking-wider drop-shadow-md">
           LEVEL {levelNumber}
         </span>
       </div>
-      {title && (
-        <span className="text-white/80 font-bold text-xs mt-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] tracking-wide">
-          {title}
-        </span>
-      )}
     </div>
   );
 };

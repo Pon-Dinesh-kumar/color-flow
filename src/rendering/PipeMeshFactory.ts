@@ -5,9 +5,9 @@ import { COLOR_PALETTE, FlowColor } from '../puzzle/ColorSystem';
 
 export const CELL_SIZE = 1.6;
 export const HALF_CELL = CELL_SIZE / 2;
-export const PIPE_RADIUS = 0.28;
-export const COLLAR_RADIUS = 0.35;
-export const COLLAR_LENGTH = 0.16;
+export const PIPE_RADIUS = 0.3;
+export const COLLAR_RADIUS = 0.36;
+export const COLLAR_LENGTH = 0.18;
 
 export class PipeMeshFactory {
   private static mats = MaterialManager.getInstance();
@@ -25,8 +25,6 @@ export class PipeMeshFactory {
     // If pipe is explicitly a cross or rotatable, check if it's a rotatable junction
     if (pipe.type === 'cross' && !pipe.locked) {
       this.buildRotatableJunction(visualGroup);
-    } else if (pipe.locked && pipe.type !== 'blocker') {
-      this.buildLockedPipe(visualGroup, pipe.type);
     } else {
       switch (pipe.type) {
         case 'straight':
@@ -117,16 +115,15 @@ export class PipeMeshFactory {
 
     // 1. Crystal toy acrylic tube
     const tubeGeom = new THREE.CylinderGeometry(PIPE_RADIUS, PIPE_RADIUS, length, 28);
-    const tube = new THREE.Mesh(tubeGeom, this.mats.pipeGlassMaterial);
+    const tubeMaterial = this.mats.pipeGlassMaterial;
+    const tube = new THREE.Mesh(tubeGeom, tubeMaterial);
     tube.castShadow = true;
     group.add(tube);
 
-    // 2. Soft sky/lavender contour for separation against bright backgrounds
     const contourGeom = new THREE.CylinderGeometry(PIPE_RADIUS * 0.96, PIPE_RADIUS * 0.96, length * 0.98, 28);
     const contour = new THREE.Mesh(contourGeom, this.mats.pipeGlassContourMaterial);
     group.add(contour);
 
-    // 3. Crisp white longitudinal glass reflection highlight strip
     const highlightGeom = new THREE.CylinderGeometry(PIPE_RADIUS * 1.01, PIPE_RADIUS * 1.01, length * 0.92, 16, 1, true, -0.2, 0.4);
     const highlight = new THREE.Mesh(highlightGeom, this.mats.pipeGlassHighlightMaterial);
     highlight.position.z = 0.02;

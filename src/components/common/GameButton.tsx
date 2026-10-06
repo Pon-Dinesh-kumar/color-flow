@@ -17,16 +17,17 @@ export const GameButton: React.FC<GameButtonProps> = ({
 }) => {
   const sizeClasses =
     size === 'lg'
-      ? 'w-14 h-14 md:w-16 md:h-16 rounded-full'
-      : 'w-12 h-12 md:w-14 md:h-14 rounded-full';
+      ? 'w-12 h-12 md:w-14 md:h-14 rounded-full'
+      : 'w-10 h-10 md:w-11 md:h-11 rounded-full';
 
   return (
     <button
       onClick={onClick}
       title={title}
-      className={`${sizeClasses} bg-slate-900/80 hover:bg-slate-800/90 active:scale-90 backdrop-blur-xl border border-white/20 text-white flex items-center justify-center shadow-[0_6px_20px_rgba(0,0,0,0.45)] transition-all duration-150 cursor-pointer ${className}`}
+      className={`relative overflow-hidden ${sizeClasses} bg-gradient-to-b from-sky-400/95 via-blue-500/95 to-blue-700/95 hover:brightness-110 active:scale-90 backdrop-blur-xl border-2 border-white/75 text-white flex items-center justify-center shadow-[0_5px_14px_rgba(16,57,133,0.4),inset_0_2px_4px_rgba(255,255,255,0.7),inset_0_-3px_5px_rgba(30,64,175,0.55)] transition-all duration-150 cursor-pointer ${className}`}
     >
-      {children}
+      <span className="absolute inset-x-2 top-1 h-1/2 rounded-full bg-gradient-to-b from-white/40 to-transparent pointer-events-none" />
+      <span className="relative drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">{children}</span>
     </button>
   );
 };

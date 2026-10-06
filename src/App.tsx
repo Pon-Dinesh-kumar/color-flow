@@ -8,6 +8,8 @@ import { LevelSelectModal } from './components/LevelSelectModal';
 import { SettingsModal } from './components/SettingsModal';
 import { LevelEditorModal } from './components/LevelEditorModal';
 import { TutorialHint } from './components/TutorialHint';
+import { PauseModal } from './components/PauseModal';
+import { LevelFailedModal } from './components/LevelFailedModal';
 import { CloudTransitionOverlay } from './transitions/CloudTransitionOverlay';
 
 export default function App() {
@@ -25,8 +27,7 @@ export default function App() {
     showLevelSelect,
     showSettings,
     showEditor,
-    loadLevel,
-    currentLevelNumber,
+    isPaused,
     backgroundUrl,
   } = useGameStore();
 
@@ -40,9 +41,6 @@ export default function App() {
     game.onHintPositionUpdate = (pos) => {
       setHintScreenPos(pos);
     };
-
-    // Load initial level into store
-    loadLevel(currentLevelNumber);
 
     return () => {
       game.dispose();
@@ -76,6 +74,17 @@ export default function App() {
     }
   }, [targets]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && phase === 'playing') {
+        useGameStore.getState().togglePause();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [phase]);
+
   // Trigger win celebration
   useEffect(() => {
     if (phase === 'completed' && gameRef.current) {
@@ -84,7 +93,7 @@ export default function App() {
   }, [phase]);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-slate-950 select-none flex items-center justify-center">
+    <div className="relative w-screen h-[100dvh] overflow-hidden bg-slate-950 select-none flex items-center justify-center">
       {/* Ambient background glow for widescreen/desktop letterboxed viewports */}
       <div
         className="absolute inset-0 bg-cover bg-center filter blur-3xl opacity-30 scale-110 pointer-events-none"
@@ -99,13 +108,9 @@ export default function App() {
         In-game screen zooms in a bit like it was earlier for an up-close immersive feel.
       */}
       <div
-        className="relative shadow-[0_0_80px_rgba(0,0,0,0.9)] flex flex-col items-center justify-center overflow-hidden"
+        className="game-frame relative h-full w-full shadow-[0_0_80px_rgba(0,0,0,0.9)] flex flex-col items-center justify-center overflow-hidden"
         style={{
-          width: '100%',
           height: '100%',
-          maxWidth: 'calc(100vh * (940 / 1672))',
-          maxHeight: 'calc(100vw * (1672 / 940))',
-          aspectRatio: '940 / 1672',
         }}
       >
         {/* Dynamic Background Layer:
@@ -114,11 +119,13 @@ export default function App() {
         */}
         <div
           className={`absolute inset-0 pointer-events-none transition-transform duration-700 ease-out will-change-transform ${
-            phase === 'menu' ? 'scale-100 origin-center' : 'scale-[1.38] origin-[50%_62%]'
+            phase === 'menu'
+              ? 'scale-100 origin-center'
+              : 'scale-[1.48] origin-[50%_62%] blur-[5px] brightness-90'
           }`}
           style={{
             backgroundImage: `url(${backgroundUrl})`,
-            backgroundSize: '100% 100%',
+            backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
           }}
@@ -145,6 +152,8 @@ export default function App() {
 
         {/* Level Complete Celebration Modal (floating non-intrusive) */}
         {phase === 'completed' && <LevelCompleteModal />}
+        {phase === 'failed' && <LevelFailedModal />}
+        {phase === 'playing' && isPaused && <PauseModal />}
 
         {/* Level Select Modal */}
         {showLevelSelect && <LevelSelectModal />}

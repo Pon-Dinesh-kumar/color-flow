@@ -85,7 +85,7 @@ export const GameLogo: React.FC = () => {
       </h1>
 
       {/* Subtitle Tagline */}
-      <p className="mt-1 text-white font-extrabold text-sm sm:text-base tracking-wider uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+      <p className="mt-1 text-white font-extrabold text-xs sm:text-sm tracking-wider uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
         Connect • Rotate • Flow
       </p>
     </div>

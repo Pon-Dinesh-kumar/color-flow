@@ -10,7 +10,7 @@ export class TargetCanisterMesh {
   private mats = MaterialManager.getInstance();
   private fillMesh: THREE.Mesh;
   private glowRingMesh: THREE.Mesh;
-  private maxFillHeight = 0.95;
+  private maxFillHeight = 0.78;
   private canisterRadius = 0.46;
 
   constructor(target: TargetNode) {
@@ -20,8 +20,8 @@ export class TargetCanisterMesh {
 
     // Fill level mesh inside canister
     const fillGeom = new THREE.CylinderGeometry(
-      this.canisterRadius * 0.92,
-      this.canisterRadius * 0.92,
+      this.canisterRadius * 0.86,
+      this.canisterRadius * 0.86,
       this.maxFillHeight,
       28
     );
@@ -29,7 +29,7 @@ export class TargetCanisterMesh {
 
     const fluidMat = this.mats.getFluidMaterial(target.color);
     this.fillMesh = new THREE.Mesh(fillGeom, fluidMat);
-    this.fillMesh.position.y = -0.40;
+    this.fillMesh.position.y = -0.28;
     this.fillMesh.scale.y = Math.max(0.04, target.currentAmount / Math.max(1, target.requiredAmount));
 
     // Glowing base ring
@@ -73,33 +73,32 @@ export class TargetCanisterMesh {
     this.group.add(this.glowRingMesh);
 
     // 2. Crystal Toy Acrylic Glass Beaker
-    const glassGeom = new THREE.CylinderGeometry(this.canisterRadius, this.canisterRadius, canisterHeight, 28);
+    const glassGeom = new THREE.LatheGeometry(
+      [
+        new THREE.Vector2(0, -0.46),
+        new THREE.Vector2(this.canisterRadius * 0.35, -0.46),
+        new THREE.Vector2(this.canisterRadius * 0.72, -0.43),
+        new THREE.Vector2(this.canisterRadius * 0.94, -0.35),
+        new THREE.Vector2(this.canisterRadius, -0.23),
+        new THREE.Vector2(this.canisterRadius, canisterHeight - 0.46),
+        new THREE.Vector2(this.canisterRadius * 0.97, canisterHeight - 0.42),
+      ],
+      32
+    );
     const glassMesh = new THREE.Mesh(glassGeom, this.mats.pipeGlassMaterial);
-    glassMesh.position.y = 0.1;
     this.group.add(glassMesh);
 
-    const contourGeom = new THREE.CylinderGeometry(this.canisterRadius * 0.96, this.canisterRadius * 0.96, canisterHeight * 0.98, 28);
-    const contourMesh = new THREE.Mesh(contourGeom, this.mats.pipeGlassContourMaterial);
-    contourMesh.position.y = 0.1;
-    this.group.add(contourMesh);
-
-    const hlGeom = new THREE.CylinderGeometry(this.canisterRadius * 1.01, this.canisterRadius * 1.01, canisterHeight * 0.94, 16, 1, true, -0.2, 0.4);
+    const hlGeom = new THREE.CylinderGeometry(this.canisterRadius * 1.01, this.canisterRadius * 1.01, canisterHeight * 0.78, 16, 1, true, -0.2, 0.4);
     const hlMesh = new THREE.Mesh(hlGeom, this.mats.pipeGlassHighlightMaterial);
-    hlMesh.position.set(0, 0.1, 0.02);
+    hlMesh.position.set(0, canisterHeight * 0.33, 0.02);
     this.group.add(hlMesh);
 
-    // 3. Intake collar at top (glossy white toy collar with chrome lip)
-    const intakeCollarGeom = new THREE.CylinderGeometry(0.32, this.canisterRadius * 1.04, 0.24, 28);
-    const intakeCollar = new THREE.Mesh(intakeCollarGeom, this.mats.metalCollarMaterial);
-    intakeCollar.position.y = 0.68;
-    intakeCollar.castShadow = true;
-    this.group.add(intakeCollar);
-
-    const intakeLipGeom = new THREE.TorusGeometry(0.33, 0.03, 16, 28);
-    const intakeLip = new THREE.Mesh(intakeLipGeom, this.mats.metalAccentMaterial);
-    intakeLip.rotation.x = Math.PI / 2;
-    intakeLip.position.y = 0.78;
-    this.group.add(intakeLip);
+    // Raised mouth bead gives the open beaker a finished glass edge without coupling it to the pipe.
+    const mouthLipGeom = new THREE.TorusGeometry(this.canisterRadius * 0.98, 0.035, 16, 32);
+    const mouthLip = new THREE.Mesh(mouthLipGeom, this.mats.metalAccentMaterial);
+    mouthLip.rotation.x = Math.PI / 2;
+    mouthLip.position.y = canisterHeight - 0.43;
+    this.group.add(mouthLip);
 
     // Add fill mesh inside glass
     this.group.add(this.fillMesh);

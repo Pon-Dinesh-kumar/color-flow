@@ -125,6 +125,17 @@ export const useGameStore = create<GameState>((set, get) => ({
     const pipe = state.pipes[pipeId];
     if (!pipe || pipe.locked) return;
 
+    const maxMoves = state.currentLevel?.maxMoves;
+    if (maxMoves && state.movesUsed >= maxMoves) {
+      AnalyticsService.track('level_failed', {
+        levelNumber: state.currentLevelNumber,
+        movesUsed: state.movesUsed,
+        reason: 'out_of_moves',
+      });
+      set({ phase: 'failed', isPaused: false });
+      return;
+    }
+
     const newRot = (pipe.rotation + 90) % 360;
     const updatedPipe = { ...pipe, rotation: newRot };
 
@@ -146,6 +157,17 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     const pipe = state.pipes[pipeId];
     if (!pipe || pipe.type !== 'gate') return;
+
+    const maxMoves = state.currentLevel?.maxMoves;
+    if (maxMoves && state.movesUsed >= maxMoves) {
+      AnalyticsService.track('level_failed', {
+        levelNumber: state.currentLevelNumber,
+        movesUsed: state.movesUsed,
+        reason: 'out_of_moves',
+      });
+      set({ phase: 'failed', isPaused: false });
+      return;
+    }
 
     const newIsOpen = !(pipe.isOpen ?? true);
     const updatedPipe = { ...pipe, isOpen: newIsOpen };
@@ -261,7 +283,16 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   resetProgress: () => {
     SaveService.resetProgress();
-    set({ currentLevelNumber: 1 });
-    get().loadLevel(1);
+    set({
+      phase: 'menu',
+      currentLevelNumber: 1,
+      currentLevel: null,
+      pipes: {},
+      targets: {},
+      movesUsed: 0,
+      starsEarned: 0,
+      activeTargetIds: [],
+      isPaused: false,
+    });
   },
 }));

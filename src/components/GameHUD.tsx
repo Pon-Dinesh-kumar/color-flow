@@ -1,5 +1,5 @@
 import React from 'react';
-import { RotateCcw, Home, Volume2, VolumeX } from 'lucide-react';
+import { Home, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import { useGameStore } from '../game/gameState';
 import { AudioManager } from '../engine/AudioManager';
 import { CloudTransitionManager } from '../transitions/CloudTransitionManager';
@@ -14,20 +14,20 @@ export const GameHUD: React.FC = () => {
     currentLevel,
     targets,
     movesUsed,
-    restartLevel,
     setPhase,
     sfx,
     toggleSfx,
+    restartLevel,
   } = useGameStore();
 
   const targetList = Object.values(targets);
 
   return (
-    <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-4 md:p-6 select-none pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.2rem,env(safe-area-inset-bottom))]">
+    <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-3 md:p-5 select-none pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.9rem,env(safe-area-inset-bottom))]">
       {/* Top Header Navigation Row */}
-      <div className="w-full flex items-center justify-between">
-        {/* Left: Home Button */}
-        <div className="pointer-events-auto">
+      <div className="flex w-full items-start justify-between gap-2">
+        {/* Left: Home Button and Level */}
+        <div className="flex items-start gap-2 pointer-events-auto">
           <GameButton
             onClick={() => {
               AudioManager.playButtonClick();
@@ -43,16 +43,12 @@ export const GameHUD: React.FC = () => {
           >
             <Home className="w-6 h-6" />
           </GameButton>
+
+          <LevelPill levelNumber={currentLevelNumber} />
         </div>
 
-        {/* Center: Large Floating Level Pill */}
-        <LevelPill
-          levelNumber={currentLevelNumber}
-          title={currentLevel?.title}
-        />
-
-        {/* Right: Sound & Restart Buttons */}
-        <div className="flex items-center gap-2.5 pointer-events-auto">
+        {/* Right: Sound & Retry Buttons */}
+        <div className="flex items-center justify-end gap-1.5 pointer-events-auto">
           <GameButton
             onClick={() => {
               AudioManager.playButtonClick();
@@ -71,23 +67,21 @@ export const GameHUD: React.FC = () => {
                 to: 'gameplay',
                 direction: 'center',
                 theme: 'default',
-                onPageSwitch: () => restartLevel(),
+                onPageSwitch: restartLevel,
               });
             }}
-            title="Restart Level"
+            title="Retry Level"
           >
-            <RotateCcw className="w-5 h-5" />
+            <RotateCcw className="w-4 h-4" />
           </GameButton>
+
         </div>
       </div>
 
       {/* Bottom Floating Status Section */}
-      <div className="w-full flex flex-col items-center gap-2.5 pointer-events-auto mb-2">
-        {/* Moves Indicator */}
+      <div className="w-full flex items-center justify-center flex-wrap gap-2 pointer-events-auto mb-1">
         <MovesChip movesUsed={movesUsed} maxMoves={currentLevel?.maxMoves} />
-
-        {/* Color Objectives Row */}
-        <div className="flex items-center justify-center flex-wrap gap-3 max-w-lg">
+        <div className="flex items-center justify-center flex-wrap gap-2 max-w-full">
           {targetList.map((target) => (
             <ObjectiveChip
               key={target.id}

@@ -23,18 +23,18 @@ export const HomeNavigation: React.FC<HomeNavigationProps> = ({
             onOpenSettings();
           }}
           aria-label="Settings"
-          className="relative w-14 h-14 rounded-full backdrop-blur-md border flex items-center justify-center text-white active:scale-90 transition-all cursor-pointer group"
+          className="relative w-11 h-11 rounded-full backdrop-blur-md border flex items-center justify-center text-white active:scale-90 transition-all cursor-pointer group"
           style={{
             background: 'linear-gradient(145deg, rgba(191,219,254,0.68), rgba(59,130,246,0.38) 52%, rgba(30,64,175,0.5))',
             borderColor: 'rgba(255,255,255,0.72)',
             boxShadow: '0 8px 24px rgba(19,53,130,0.32), inset 0 2px 5px rgba(255,255,255,0.78), inset 0 -4px 10px rgba(37,99,235,0.38)',
           }}
         >
-          <Settings className="w-6 h-6 text-white group-hover:rotate-45 transition-transform duration-300 drop-shadow-md" />
-          <div className="absolute top-0.5 inset-x-2 h-4 rounded-full bg-white/15 pointer-events-none" />
+          <Settings className="w-5 h-5 text-white group-hover:rotate-45 transition-transform duration-300 drop-shadow-md" />
+          <div className="absolute top-0.5 inset-x-2 h-3 rounded-full bg-white/15 pointer-events-none" />
         </button>
         <span
-          className="text-xs font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] tracking-wider mt-1.5"
+          className="text-[10px] font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] tracking-wider mt-1"
           style={{ fontFamily: "'Fredoka', 'Nunito', sans-serif" }}
         >
           Settings
@@ -49,18 +49,18 @@ export const HomeNavigation: React.FC<HomeNavigationProps> = ({
             onOpenLevels();
           }}
           aria-label="Levels"
-          className="relative w-14 h-14 rounded-full backdrop-blur-md border flex items-center justify-center text-white active:scale-90 transition-all cursor-pointer group"
+          className="relative w-11 h-11 rounded-full backdrop-blur-md border flex items-center justify-center text-white active:scale-90 transition-all cursor-pointer group"
           style={{
             background: 'linear-gradient(145deg, rgba(191,219,254,0.68), rgba(59,130,246,0.38) 52%, rgba(30,64,175,0.5))',
             borderColor: 'rgba(255,255,255,0.72)',
             boxShadow: '0 8px 24px rgba(19,53,130,0.32), inset 0 2px 5px rgba(255,255,255,0.78), inset 0 -4px 10px rgba(37,99,235,0.38)',
           }}
         >
-          <BarChart2 className="w-6 h-6 text-white group-hover:scale-110 transition-transform drop-shadow-md" />
-          <div className="absolute top-0.5 inset-x-2 h-4 rounded-full bg-white/15 pointer-events-none" />
+          <BarChart2 className="w-5 h-5 text-white group-hover:scale-110 transition-transform drop-shadow-md" />
+          <div className="absolute top-0.5 inset-x-2 h-3 rounded-full bg-white/15 pointer-events-none" />
         </button>
         <span
-          className="text-xs font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] tracking-wider mt-1.5"
+          className="text-[10px] font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] tracking-wider mt-1"
           style={{ fontFamily: "'Fredoka', 'Nunito', sans-serif" }}
         >
           Levels
@@ -75,18 +75,18 @@ export const HomeNavigation: React.FC<HomeNavigationProps> = ({
             onOpenThemes();
           }}
           aria-label="Themes"
-          className="relative w-14 h-14 rounded-full backdrop-blur-md border flex items-center justify-center text-white active:scale-90 transition-all cursor-pointer group"
+          className="relative w-11 h-11 rounded-full backdrop-blur-md border flex items-center justify-center text-white active:scale-90 transition-all cursor-pointer group"
           style={{
             background: 'linear-gradient(145deg, rgba(191,219,254,0.68), rgba(59,130,246,0.38) 52%, rgba(30,64,175,0.5))',
             borderColor: 'rgba(255,255,255,0.72)',
             boxShadow: '0 8px 24px rgba(19,53,130,0.32), inset 0 2px 5px rgba(255,255,255,0.78), inset 0 -4px 10px rgba(37,99,235,0.38)',
           }}
         >
-          <Palette className="w-6 h-6 text-white group-hover:scale-110 transition-transform drop-shadow-md" />
-          <div className="absolute top-0.5 inset-x-2 h-4 rounded-full bg-white/15 pointer-events-none" />
+          <Palette className="w-5 h-5 text-white group-hover:scale-110 transition-transform drop-shadow-md" />
+          <div className="absolute top-0.5 inset-x-2 h-3 rounded-full bg-white/15 pointer-events-none" />
         </button>
         <span
-          className="text-xs font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] tracking-wider mt-1.5"
+          className="text-[10px] font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] tracking-wider mt-1"
           style={{ fontFamily: "'Fredoka', 'Nunito', sans-serif" }}
         >
           Themes

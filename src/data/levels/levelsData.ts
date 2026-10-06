@@ -1,4 +1,7 @@
 import { LevelConfig } from '../../gameplay/Level';
+import { Direction, GridPosition, getOppositeDirection, rotateDirection } from '../../puzzle/Grid';
+import { FlowColor } from '../../puzzle/ColorSystem';
+import { getBaseConnections, PipeType } from '../../puzzle/Pipe';
 
 export const LEVELS: LevelConfig[] = [
   // Level 1: Tutorial - First connection
@@ -45,8 +48,8 @@ export const LEVELS: LevelConfig[] = [
       { id: 'p3', type: 'corner', gridPosition: { x: 2, y: 1 }, rotation: 0 },
       { id: 'p4', type: 'straight', gridPosition: { x: 2, y: 2 }, rotation: 0, locked: true },
     ],
-    targetMoves: 3,
-    maxMoves: 12,
+    targetMoves: 5,
+    maxMoves: 13,
   },
 
   // Level 3: Dual Color
@@ -86,20 +89,19 @@ export const LEVELS: LevelConfig[] = [
       { id: 's_blue', position: { x: 2, y: 0 }, direction: 'down', color: 'blue', amount: 10 },
     ],
     targets: [
-      { id: 't_blue', position: { x: 0, y: 4 }, acceptDirection: 'up', color: 'blue', requiredAmount: 10, currentAmount: 0 },
-      { id: 't_red', position: { x: 2, y: 4 }, acceptDirection: 'up', color: 'red', requiredAmount: 10, currentAmount: 0 },
+      { id: 't_red', position: { x: 0, y: 4 }, acceptDirection: 'up', color: 'red', requiredAmount: 10, currentAmount: 0 },
+      { id: 't_blue', position: { x: 2, y: 4 }, acceptDirection: 'up', color: 'blue', requiredAmount: 10, currentAmount: 0 },
     ],
     pipes: [
-      { id: 'p1', type: 'corner', gridPosition: { x: 0, y: 1 }, rotation: 0 }, // up to right
-      { id: 'p2', type: 'corner', gridPosition: { x: 2, y: 1 }, rotation: 270 }, // up to left (rot 270 is left & up)
-      { id: 'cross', type: 'cross', gridPosition: { x: 1, y: 2 }, rotation: 0, locked: true },
-      { id: 'p3', type: 'straight', gridPosition: { x: 0, y: 2 }, rotation: 90 },
-      { id: 'p4', type: 'straight', gridPosition: { x: 2, y: 2 }, rotation: 90 },
-      { id: 'p5', type: 'corner', gridPosition: { x: 0, y: 3 }, rotation: 90 }, // left/up to down
-      { id: 'p6', type: 'corner', gridPosition: { x: 2, y: 3 }, rotation: 180 }, // right/up to down
+      { id: 'p_red1', type: 'straight', gridPosition: { x: 0, y: 1 }, rotation: 90 },
+      { id: 'p_red2', type: 'cross', gridPosition: { x: 0, y: 2 }, rotation: 0 },
+      { id: 'p_red3', type: 'straight', gridPosition: { x: 0, y: 3 }, rotation: 0, locked: true },
+      { id: 'p_blue1', type: 'straight', gridPosition: { x: 2, y: 1 }, rotation: 0, locked: true },
+      { id: 'p_blue2', type: 'straight', gridPosition: { x: 2, y: 2 }, rotation: 0, locked: true },
+      { id: 'p_blue3', type: 'straight', gridPosition: { x: 2, y: 3 }, rotation: 0, locked: true },
     ],
-    targetMoves: 4,
-    maxMoves: 15,
+    targetMoves: 1,
+    maxMoves: 10,
   },
 
   // Level 5: T-Junction Switch
@@ -181,7 +183,7 @@ export const LEVELS: LevelConfig[] = [
       { id: 'c_right', type: 'corner', gridPosition: { x: 2, y: 1 }, rotation: 0 },
       { id: 's_right', type: 'straight', gridPosition: { x: 2, y: 2 }, rotation: 0, locked: true },
     ],
-    targetMoves: 4,
+    targetMoves: 5,
     maxMoves: 16,
   },
 
@@ -210,8 +212,8 @@ export const LEVELS: LevelConfig[] = [
       { id: 'c_y1', type: 'corner', gridPosition: { x: 3, y: 2 }, rotation: 90 }, // down to right
       { id: 'c_y2', type: 'corner', gridPosition: { x: 4, y: 2 }, rotation: 180 }, // left to down
     ],
-    targetMoves: 4,
-    maxMoves: 16,
+    targetMoves: 8,
+    maxMoves: 18,
   },
 
   // Level 9: The Merger
@@ -280,7 +282,7 @@ export const LEVELS: LevelConfig[] = [
       { id: 'c2', type: 'corner', gridPosition: { x: 2, y: 2 }, rotation: 180 },
       { id: 's2', type: 'straight', gridPosition: { x: 2, y: 3 }, rotation: 0, locked: true },
     ],
-    targetMoves: 3,
+    targetMoves: 5,
     maxMoves: 14,
   },
 
@@ -302,8 +304,8 @@ export const LEVELS: LevelConfig[] = [
       { id: 'cc', type: 'color_changer', gridPosition: { x: 1, y: 2 }, rotation: 90, targetColor: 'purple' }, // scrambled rot
       { id: 's2', type: 'straight', gridPosition: { x: 1, y: 3 }, rotation: 0, locked: true },
     ],
-    targetMoves: 1,
-    maxMoves: 8,
+    targetMoves: 3,
+    maxMoves: 11,
   },
 
   // Level 13: Splitter with Color Chamber
@@ -329,7 +331,7 @@ export const LEVELS: LevelConfig[] = [
       { id: 'c_r', type: 'corner', gridPosition: { x: 3, y: 2 }, rotation: 90 },
       { id: 'cc', type: 'color_changer', gridPosition: { x: 3, y: 3 }, rotation: 90, targetColor: 'purple' },
     ],
-    targetMoves: 4,
+    targetMoves: 7,
     maxMoves: 16,
   },
 
@@ -338,26 +340,28 @@ export const LEVELS: LevelConfig[] = [
     id: 'level_14',
     number: 14,
     title: 'The Cloverleaf',
+    tutorialText: 'Guide each color around its own set of bright bends!',
     grid: { width: 5, height: 5 },
     sources: [
       { id: 's_red', position: { x: 1, y: 0 }, direction: 'down', color: 'red', amount: 10 },
       { id: 's_yellow', position: { x: 3, y: 0 }, direction: 'down', color: 'yellow', amount: 10 },
     ],
     targets: [
-      { id: 't_yellow', position: { x: 1, y: 4 }, acceptDirection: 'up', color: 'yellow', requiredAmount: 10, currentAmount: 0 },
-      { id: 't_red', position: { x: 3, y: 4 }, acceptDirection: 'up', color: 'red', requiredAmount: 10, currentAmount: 0 },
+      { id: 't_red', position: { x: 2, y: 4 }, acceptDirection: 'up', color: 'red', requiredAmount: 10, currentAmount: 0 },
+      { id: 't_yellow', position: { x: 4, y: 4 }, acceptDirection: 'up', color: 'yellow', requiredAmount: 10, currentAmount: 0 },
     ],
     pipes: [
-      { id: 'c1', type: 'corner', gridPosition: { x: 1, y: 1 }, rotation: 0 },
-      { id: 'c2', type: 'corner', gridPosition: { x: 3, y: 1 }, rotation: 270 },
-      { id: 'cross', type: 'cross', gridPosition: { x: 2, y: 2 }, rotation: 0 },
-      { id: 'c3', type: 'corner', gridPosition: { x: 1, y: 2 }, rotation: 180 },
-      { id: 'c4', type: 'corner', gridPosition: { x: 3, y: 2 }, rotation: 90 },
-      { id: 'c5', type: 'corner', gridPosition: { x: 1, y: 3 }, rotation: 90 },
-      { id: 'c6', type: 'corner', gridPosition: { x: 3, y: 3 }, rotation: 180 },
+      { id: 'c1', type: 'cross', gridPosition: { x: 1, y: 1 }, rotation: 0 },
+      { id: 'c2', type: 'corner', gridPosition: { x: 1, y: 2 }, rotation: 270 },
+      { id: 'c3', type: 'corner', gridPosition: { x: 2, y: 2 }, rotation: 90 },
+      { id: 'c4', type: 'straight', gridPosition: { x: 2, y: 3 }, rotation: 0, locked: true },
+      { id: 'c5', type: 'straight', gridPosition: { x: 3, y: 1 }, rotation: 0, locked: true },
+      { id: 'c6', type: 'corner', gridPosition: { x: 3, y: 2 }, rotation: 270 },
+      { id: 'c7', type: 'corner', gridPosition: { x: 4, y: 2 }, rotation: 90 },
+      { id: 'c8', type: 'straight', gridPosition: { x: 4, y: 3 }, rotation: 0, locked: true },
     ],
-    targetMoves: 5,
-    maxMoves: 18,
+    targetMoves: 4,
+    maxMoves: 12,
   },
 
   // Level 15: Dual Gate Filter
@@ -381,132 +385,182 @@ export const LEVELS: LevelConfig[] = [
     maxMoves: 12,
   },
 
-  // Levels 16 to 30: Progressively Rich Puzzles
+  // Levels 16 to 30: hand-authored route layouts with a rising modifier mix.
   ...generateExtendedLevels(),
 ];
 
 function generateExtendedLevels(): LevelConfig[] {
-  const levels: LevelConfig[] = [];
-
-  const themes: Array<{
+  type Modifier = {
+    type: 'gate' | 'one_way' | 'color_changer';
+    y: number;
+    targetColor?: FlowColor;
+  };
+  type Lane = {
+    color: FlowColor;
+    targetColor?: FlowColor;
+    bend?: boolean;
+    modifiers?: Modifier[];
+  };
+  type Blueprint = {
     title: string;
-    colors: Array<'red' | 'blue' | 'yellow' | 'green' | 'purple' | 'orange'>;
-    grid: { width: number; height: number };
-    special: 'splitter' | 'merger' | 'gate' | 'one_way' | 'color_changer' | 'mixed';
-  }> = [
-    { title: 'Emerald Cascade', colors: ['green', 'yellow'], grid: { width: 5, height: 5 }, special: 'color_changer' },
-    { title: 'Hydraulic Web', colors: ['red', 'blue'], grid: { width: 5, height: 5 }, special: 'splitter' },
-    { title: 'The Bifurcation', colors: ['yellow', 'purple'], grid: { width: 6, height: 5 }, special: 'merger' },
-    { title: 'Spectrum Highway', colors: ['red', 'blue', 'yellow'], grid: { width: 6, height: 6 }, special: 'mixed' },
-    { title: 'Valve Chamber', colors: ['green', 'orange'], grid: { width: 5, height: 5 }, special: 'gate' },
-    { title: 'One-Way Canyon', colors: ['blue', 'red'], grid: { width: 6, height: 6 }, special: 'one_way' },
-    { title: 'Prism Refinery', colors: ['yellow', 'green', 'blue'], grid: { width: 6, height: 6 }, special: 'color_changer' },
-    { title: 'Double Bypass', colors: ['orange', 'purple'], grid: { width: 6, height: 6 }, special: 'splitter' },
-    { title: 'Grand Junction', colors: ['red', 'blue', 'green'], grid: { width: 6, height: 6 }, special: 'mixed' },
-    { title: 'The Labyrinth', colors: ['yellow', 'orange', 'purple'], grid: { width: 6, height: 6 }, special: 'mixed' },
-    { title: 'Quantum Pipe', colors: ['red', 'green', 'blue'], grid: { width: 7, height: 6 }, special: 'color_changer' },
-    { title: 'Hexa Flow', colors: ['blue', 'yellow', 'red', 'green'], grid: { width: 7, height: 6 }, special: 'mixed' },
-    { title: 'Pressure Control', colors: ['purple', 'orange', 'yellow'], grid: { width: 6, height: 6 }, special: 'gate' },
-    { title: 'Master Refinery', colors: ['red', 'blue', 'green', 'yellow'], grid: { width: 7, height: 7 }, special: 'mixed' },
-    { title: 'Color Flow Apex', colors: ['red', 'blue', 'yellow', 'green', 'purple'], grid: { width: 7, height: 7 }, special: 'mixed' },
+    height: number;
+    lanes: Lane[];
+    scrambleCount: number;
+  };
+
+  const blueprints: Blueprint[] = [
+    { title: 'Prism Path', height: 5, lanes: [{ color: 'blue', targetColor: 'purple', modifiers: [{ type: 'color_changer', y: 2, targetColor: 'purple' }] }], scrambleCount: 0 },
+    { title: 'Valve Duo', height: 5, lanes: [{ color: 'red', modifiers: [{ type: 'gate', y: 2 }] }, { color: 'blue', modifiers: [{ type: 'one_way', y: 2 }] }], scrambleCount: 0 },
+    { title: 'Twin Bends', height: 6, lanes: [{ color: 'yellow', targetColor: 'green', bend: true, modifiers: [{ type: 'color_changer', y: 4, targetColor: 'green' }] }, { color: 'purple', bend: true, modifiers: [{ type: 'gate', y: 4 }] }], scrambleCount: 1 },
+    { title: 'Triple Valve', height: 6, lanes: [{ color: 'red', bend: true, modifiers: [{ type: 'one_way', y: 4 }] }, { color: 'blue', modifiers: [{ type: 'gate', y: 2 }] }, { color: 'yellow', targetColor: 'orange', bend: true, modifiers: [{ type: 'color_changer', y: 4, targetColor: 'orange' }] }], scrambleCount: 1 },
+    { title: 'Corner Circuit', height: 6, lanes: [{ color: 'green', bend: true }, { color: 'orange', bend: true }], scrambleCount: 2 },
+    { title: 'Crossed Currents', height: 6, lanes: [{ color: 'red', bend: true, modifiers: [{ type: 'gate', y: 4 }] }, { color: 'blue' }, { color: 'yellow', bend: true, modifiers: [{ type: 'one_way', y: 4 }] }], scrambleCount: 2 },
+    { title: 'Prism Switchback', height: 6, lanes: [{ color: 'blue', targetColor: 'orange', bend: true, modifiers: [{ type: 'color_changer', y: 4, targetColor: 'orange' }] }, { color: 'green', bend: true, modifiers: [{ type: 'gate', y: 4 }] }], scrambleCount: 2 },
+    { title: 'One-Way Pair', height: 6, lanes: [{ color: 'purple', bend: true, modifiers: [{ type: 'one_way', y: 4 }] }, { color: 'yellow', bend: true, modifiers: [{ type: 'one_way', y: 4 }] }], scrambleCount: 2 },
+    { title: 'Spectrum Gates', height: 6, lanes: [{ color: 'red', bend: true, modifiers: [{ type: 'gate', y: 4 }] }, { color: 'blue', modifiers: [{ type: 'one_way', y: 3 }] }, { color: 'green', targetColor: 'yellow', bend: true, modifiers: [{ type: 'color_changer', y: 4, targetColor: 'yellow' }] }], scrambleCount: 2 },
+    { title: 'Three-Way Prism', height: 7, lanes: [{ color: 'blue', targetColor: 'purple', bend: true, modifiers: [{ type: 'color_changer', y: 5, targetColor: 'purple' }] }, { color: 'red', modifiers: [{ type: 'gate', y: 3 }] }, { color: 'yellow', bend: true, modifiers: [{ type: 'one_way', y: 5 }] }], scrambleCount: 3 },
+    { title: 'Double Detour', height: 7, lanes: [{ color: 'orange', bend: true, modifiers: [{ type: 'gate', y: 5 }] }, { color: 'green', bend: true, modifiers: [{ type: 'one_way', y: 5 }] }], scrambleCount: 3 },
+    { title: 'Prism Valves', height: 7, lanes: [{ color: 'red', targetColor: 'orange', bend: true, modifiers: [{ type: 'color_changer', y: 5, targetColor: 'orange' }] }, { color: 'blue', targetColor: 'purple', bend: true, modifiers: [{ type: 'color_changer', y: 5, targetColor: 'purple' }] }, { color: 'yellow', modifiers: [{ type: 'gate', y: 3 }] }], scrambleCount: 3 },
+    { title: 'One-Way Maze', height: 7, lanes: [{ color: 'blue', bend: true, modifiers: [{ type: 'one_way', y: 5 }] }, { color: 'purple', modifiers: [{ type: 'gate', y: 3 }] }, { color: 'orange', bend: true, modifiers: [{ type: 'one_way', y: 5 }] }], scrambleCount: 4 },
+    { title: 'Triple Switchback', height: 7, lanes: [{ color: 'green', bend: true, modifiers: [{ type: 'gate', y: 5 }] }, { color: 'red', targetColor: 'orange', bend: true, modifiers: [{ type: 'color_changer', y: 3, targetColor: 'orange' }] }, { color: 'blue', bend: true, modifiers: [{ type: 'one_way', y: 5 }] }], scrambleCount: 4 },
+    { title: 'Master Flow', height: 7, lanes: [{ color: 'red', targetColor: 'orange', bend: true, modifiers: [{ type: 'color_changer', y: 5, targetColor: 'orange' }, { type: 'gate', y: 1 }] }, { color: 'blue', targetColor: 'purple', bend: true, modifiers: [{ type: 'color_changer', y: 5, targetColor: 'purple' }, { type: 'one_way', y: 1 }] }, { color: 'yellow', bend: true, modifiers: [{ type: 'gate', y: 5 }] }], scrambleCount: 5 },
   ];
 
-  themes.forEach((item, index) => {
-    const levelNumber = 16 + index;
-    const { width, height } = item.grid;
-    const cCount = item.colors.length;
+  const levels = blueprints.map((blueprint, index): LevelConfig => {
+    const number = 16 + index;
+    const height = blueprint.height;
+    const width = 7;
+    const laneStarts = blueprint.lanes.length === 1
+      ? [3]
+      : blueprint.lanes.length === 2
+        ? [1, 5]
+        : [1, 3, 5];
+    const occupied = new Map<string, LevelConfig['pipes'][number]>();
+    const routePieces: LevelConfig['pipes'] = [];
+    const sources: LevelConfig['sources'] = [];
+    const targets: LevelConfig['targets'] = [];
+    let solutionMoves = 0;
+    let pieceIndex = 0;
 
-    // Pick positions along top for sources and bottom for targets
-    const sources = item.colors.map((c, i) => {
-      const col = Math.min(width - 1, 1 + i * Math.floor((width - 2) / Math.max(1, cCount - 1)));
-      return {
-        id: `s_${c}_${levelNumber}`,
-        position: { x: col, y: 0 },
-        direction: 'down' as const,
-        color: c,
-        amount: 10,
-      };
-    });
+    blueprint.lanes.forEach((lane, laneIndex) => {
+      const startX = laneStarts[laneIndex];
+      const bendY = Math.floor(height / 2);
+      const shift = laneIndex === 0 ? 1 : -1;
+      const hasBend = lane.bend && !(blueprint.lanes.length === 3 && laneIndex === 1);
+      const endX = hasBend ? startX + shift : startX;
+      const path: GridPosition[] = [];
 
-    const targets = item.colors.map((c, i) => {
-      const col = Math.min(width - 1, 1 + i * Math.floor((width - 2) / Math.max(1, cCount - 1)));
-      return {
-        id: `t_${c}_${levelNumber}`,
-        position: { x: col, y: height - 1 },
-        acceptDirection: 'up' as const,
-        color: c,
-        requiredAmount: 10,
-        currentAmount: 0,
-      };
-    });
-
-    // Populate interior with a puzzle grid of straight, corners, cross, and special piece
-    const pipes: any[] = [];
-    let pipeId = 1;
-
-    for (let y = 1; y < height - 1; y++) {
-      for (let x = 0; x < width; x++) {
-        // Place pipe if along stream columns or connecting paths
-        const isStreamCol = sources.some((s) => s.position.x === x);
-        const isHorizontalConnector = y === Math.floor(height / 2);
-
-        if (isStreamCol || isHorizontalConnector || (x > 0 && x < width - 1)) {
-          let type: any = 'straight';
-          let rot = 0;
-
-          if (isStreamCol && !isHorizontalConnector) {
-            type = 'straight';
-            rot = (pipeId % 2 === 0) ? 90 : 0; // scramble some rotations
-          } else if (isHorizontalConnector && isStreamCol) {
-            type = 'cross';
-            rot = 0;
-          } else if (isHorizontalConnector) {
-            type = 'straight';
-            rot = 90;
-          } else {
-            type = 'corner';
-            rot = (pipeId * 90) % 360;
-          }
-
-          // Special piece placement in the center
-          if (x === Math.floor(width / 2) && y === Math.floor(height / 2)) {
-            if (item.special === 'splitter') {
-              type = 'splitter';
-              rot = 0;
-            } else if (item.special === 'gate') {
-              type = 'gate';
-              rot = 0;
-            } else if (item.special === 'one_way') {
-              type = 'one_way';
-              rot = 0;
-            } else if (item.special === 'color_changer') {
-              type = 'color_changer';
-              rot = 0;
-            }
-          }
-
-          pipes.push({
-            id: `p_${levelNumber}_${pipeId++}`,
-            type,
-            gridPosition: { x, y },
-            rotation: rot,
-          });
+      for (let y = 1; y <= height - 2; y += 1) {
+        if (hasBend && y > bendY) {
+          path.push({ x: endX, y });
+        } else {
+          path.push({ x: startX, y });
+        }
+        if (hasBend && y === bendY) {
+          path.push({ x: endX, y });
         }
       }
+
+      sources.push({
+        id: `s_${number}_${laneIndex}`,
+        position: { x: startX, y: 0 },
+        direction: 'down',
+        color: lane.color,
+        amount: 10,
+      });
+      targets.push({
+        id: `t_${number}_${laneIndex}`,
+        position: { x: endX, y: height - 1 },
+        acceptDirection: 'up',
+        color: lane.targetColor ?? lane.color,
+        requiredAmount: 10,
+        currentAmount: 0,
+      });
+
+      for (let pathIndex = 0; pathIndex < path.length; pathIndex += 1) {
+        const position = path[pathIndex];
+        const previous = pathIndex === 0 ? sources[laneIndex].position : path[pathIndex - 1];
+        const next = pathIndex === path.length - 1 ? targets[laneIndex].position : path[pathIndex + 1];
+        const entering = directionBetween(position, previous);
+        const exiting = directionBetween(position, next);
+        const isStraight = getOppositeDirection(entering) === exiting;
+        const special = lane.modifiers?.find((modifier) => modifier.y === position.y);
+        const type: PipeType = special?.type ?? (isStraight ? 'straight' : 'corner');
+        const solutionRotation = type === 'straight' || type === 'gate' || type === 'color_changer' || type === 'one_way'
+          ? rotationForPorts(type === 'one_way' ? 'straight' : type, entering, exiting)
+          : rotationForPorts(type, entering, exiting);
+        let rotation = solutionRotation;
+        let isOpen = true;
+
+        if (special?.type === 'gate') {
+          isOpen = false;
+          solutionMoves += 1;
+        } else if (special?.type === 'one_way') {
+          rotation = (solutionRotation + 180) % 360;
+          solutionMoves += 2;
+        } else if (special?.type === 'color_changer') {
+          rotation = (solutionRotation + 270) % 360;
+          solutionMoves += 1;
+        }
+
+        const pipe = {
+          id: `p_${number}_${pieceIndex++}`,
+          type,
+          gridPosition: position,
+          rotation,
+          ...(special?.type === 'gate' ? { isOpen } : {}),
+          ...(special?.type === 'color_changer' ? { targetColor: special.targetColor } : {}),
+        };
+        occupied.set(`${position.x},${position.y}`, pipe);
+        routePieces.push(pipe);
+      }
+    });
+
+    const candidates = routePieces.filter((pipe) =>
+      pipe.type === 'straight' && !blueprint.lanes.some((lane, laneIndex) =>
+        lane.modifiers?.some((modifier) => modifier.y === pipe.gridPosition.y && laneStarts[laneIndex] === pipe.gridPosition.x)
+      )
+    );
+    const crossPiece = candidates[0];
+    if (crossPiece) crossPiece.type = 'cross';
+
+    let remainingScramble = blueprint.scrambleCount;
+    for (const pipe of routePieces) {
+      if (remainingScramble === 0 || pipe.type === 'gate' || pipe.type === 'one_way' || pipe.type === 'color_changer' || pipe.type === 'cross') continue;
+      pipe.rotation = (pipe.rotation + 270) % 360;
+      solutionMoves += 1;
+      remainingScramble -= 1;
     }
 
-    levels.push({
-      id: `level_${levelNumber}`,
-      number: levelNumber,
-      title: item.title,
+    return {
+      id: `level_${number}`,
+      number,
+      title: blueprint.title,
+      tutorialText: `Connect each color through the ${blueprint.lanes.some((lane) => lane.modifiers?.length) ? 'special pipes' : 'curving pipe route'}!`,
+      hintPipePosition: routePieces[0]?.gridPosition,
       grid: { width, height },
       sources,
       targets,
-      pipes,
-      targetMoves: Math.max(4, 6 + Math.floor(index * 0.8)),
-      maxMoves: Math.max(12, 14 + index),
-    });
+      pipes: [...occupied.values()],
+      targetMoves: Math.max(1, solutionMoves),
+      maxMoves: Math.max(12, solutionMoves + 8),
+    };
   });
 
   return levels;
+}
+
+function directionBetween(from: GridPosition, to: GridPosition): Direction {
+  if (to.x > from.x) return 'right';
+  if (to.x < from.x) return 'left';
+  if (to.y > from.y) return 'down';
+  return 'up';
+}
+
+function rotationForPorts(type: PipeType, entering: Direction, exiting: Direction): number {
+  for (const rotation of [0, 90, 180, 270]) {
+    const ports = getBaseConnections(type).map((port) => rotateDirection(port, rotation));
+    if (ports.includes(entering) && ports.includes(exiting)) return rotation;
+  }
+  return 0;
 }

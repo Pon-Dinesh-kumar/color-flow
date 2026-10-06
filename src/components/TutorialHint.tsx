@@ -16,20 +16,16 @@ export const TutorialHint: React.FC<TutorialHintProps> = ({ screenPos, visible }
         top: `${screenPos.y}px`,
       }}
     >
-      {/* Glowing pulsing target ring on the pipe */}
       <div className="relative flex items-center justify-center">
-        <div className="w-20 h-20 rounded-full border-2 border-emerald-400/80 animate-ping opacity-75" />
-        <div className="w-16 h-16 rounded-full border-2 border-dashed border-white/90 animate-spin absolute" style={{ animationDuration: '6s' }} />
+        <div className="h-[4.5rem] w-[4.5rem] rounded-full border-[3px] border-amber-300/90 shadow-[0_0_0_7px_rgba(255,255,255,0.18),0_0_25px_rgba(251,191,36,0.65)] animate-pulse" />
+        <div className="absolute h-16 w-16 rounded-full border-2 border-dashed border-white/90" />
 
-        {/* Small floating rotation hint badge */}
-        <div className="absolute -top-7 -right-5 py-1 px-2.5 rounded-full bg-slate-900/90 border border-emerald-400 shadow-lg text-emerald-300 font-extrabold text-xs flex items-center gap-1 animate-bounce">
-          <span>↻</span>
-          <span className="text-[10px] tracking-wide">TAP</span>
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border-2 border-white/90 bg-gradient-to-b from-amber-300 to-orange-500 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-white shadow-[0_4px_10px_rgba(124,45,18,0.35),inset_0_1px_3px_rgba(255,255,255,0.7)] animate-bounce">
+          Tap to rotate!
         </div>
 
-        {/* Bouncing Hand pointer underneath the pipe pointing up */}
         <div className="absolute top-10 flex flex-col items-center animate-bounce" style={{ animationDuration: '1.2s' }}>
-          <span className="text-3xl filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]">
+          <span className="text-3xl drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]">
             👆
           </span>
         </div>

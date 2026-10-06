@@ -12,6 +12,12 @@
   filter: saturate(1.4) contrast(1.1);
 }
 
+@media (min-width: 640px) {
+  .game-frame {
+    max-width: calc(100vh * (940 / 1672));
+  }
+}
+
 /* Custom candy glow and bounce animations */
 @keyframes playBreathe {
   0%, 100% {

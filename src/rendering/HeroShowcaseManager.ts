@@ -448,8 +448,10 @@ export class HeroShowcaseManager {
   }
 
   public update(delta: number) {
+    if (!Number.isFinite(delta) || delta < 0) return;
+
     // Section 7: Loop (Home Screen) 4 - 6 seconds
-    this.animTimer += delta * 0.22;
+    this.animTimer = (this.animTimer + delta * 0.22) % 1.0;
 
     const count = 5;
     const spacing = 0.17;

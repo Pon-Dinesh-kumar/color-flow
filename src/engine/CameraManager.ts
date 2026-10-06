@@ -43,8 +43,8 @@ export class CameraManager {
 
     const fovRad = THREE.MathUtils.degToRad(this.camera.fov);
 
-    // Height framing: puzzle occupies ~78% of available screen height
-    const targetHeightFraction = 0.78;
+    // Leave room for the top HUD and bottom objectives around the full puzzle and podium.
+    const targetHeightFraction = 0.68;
     const requiredVisibleHeight = puzzleHeight / targetHeightFraction;
     const distY = requiredVisibleHeight / (2 * Math.tan(fovRad / 2));
 

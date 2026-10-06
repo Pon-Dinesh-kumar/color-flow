@@ -97,7 +97,7 @@ export class BoardView {
       // Dock flush into pipe collar above (snug coupling with 0.04 overlap)
       const sourcePipeWorldY = worldPos.y + CELL_SIZE;
       const pipeBottomCollarY = sourcePipeWorldY - HALF_CELL;
-      const dockedY = pipeBottomCollarY - 0.76;
+      const dockedY = pipeBottomCollarY - 0.88;
 
       tgtCanister.group.position.set(worldPos.x, dockedY, 0);
 

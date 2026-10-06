@@ -37,17 +37,17 @@ export const LevelCompleteModal: React.FC = () => {
   if (!visible) return null;
 
   return (
-    <div className="absolute inset-0 z-30 flex items-center justify-center p-4 bg-slate-950/40 backdrop-blur-xs select-none transition-opacity duration-300">
-      <div className="w-full max-w-sm rounded-3xl bg-slate-900/85 backdrop-blur-xl border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.7)] p-6 md:p-8 flex flex-col items-center text-center relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="absolute inset-0 z-30 flex items-center justify-center p-4 bg-blue-950/30 backdrop-blur-[2px] select-none transition-opacity duration-300">
+      <div className="w-full max-w-sm rounded-[2rem] bg-gradient-to-b from-sky-500/95 via-blue-700/95 to-indigo-900/95 backdrop-blur-xl border-[3px] border-amber-100/85 shadow-[0_18px_48px_rgba(5,20,70,0.55),inset_0_3px_6px_rgba(255,255,255,0.45)] p-5 md:p-7 flex flex-col items-center text-center relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Glow backdrop */}
         <div className="absolute -top-12 -left-12 w-32 h-32 bg-amber-500/20 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none" />
 
-        <span className="text-amber-400 font-black uppercase tracking-widest text-xs mb-1">
+        <span className="rounded-full border border-amber-100/60 bg-gradient-to-b from-amber-300 to-orange-500 px-3 py-1 text-white font-black uppercase tracking-widest text-xs mb-2 shadow-[inset_0_1px_3px_rgba(255,255,255,0.65),0_3px_8px_rgba(0,0,0,0.2)]">
           Level {currentLevelNumber} Cleared
         </span>
 
-        <h2 className="text-3xl md:text-4xl font-black text-white tracking-wider drop-shadow-md">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-[0.02em] leading-tight drop-shadow-md">
           LEVEL COMPLETE
         </h2>
 
@@ -73,12 +73,12 @@ export const LevelCompleteModal: React.FC = () => {
           })}
         </div>
 
-        <p className="text-emerald-400 font-extrabold text-sm tracking-wider uppercase mb-4">
+        <p className="text-lime-200 font-extrabold text-sm tracking-wider uppercase mb-4 drop-shadow-[0_2px_5px_rgba(0,0,0,0.45)]">
           ✨ Perfect Flow! ✨
         </p>
 
         {/* Moves Summary */}
-        <div className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 px-4 mb-5 flex items-center justify-around text-white">
+        <div className="w-full bg-gradient-to-r from-white/15 to-sky-200/10 border border-white/30 rounded-2xl py-2.5 px-4 mb-5 flex items-center justify-around text-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.14)]">
           <div className="flex flex-col items-center">
             <span className="text-xs text-white/60 font-semibold uppercase">Total Moves</span>
             <span className="text-xl font-black text-white">{movesUsed}</span>
@@ -93,7 +93,7 @@ export const LevelCompleteModal: React.FC = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="w-full flex flex-col gap-3">
+        <div className="w-full flex flex-col gap-2.5">
           <button
             onClick={() => {
               AudioManager.playButtonClick();
@@ -105,10 +105,10 @@ export const LevelCompleteModal: React.FC = () => {
                 onPageSwitch: () => nextLevel(),
               });
             }}
-            className="w-full py-4 px-6 rounded-full bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 hover:from-emerald-400 hover:to-green-500 active:scale-95 transition-all text-white font-black text-lg tracking-wider shadow-[0_8px_24px_rgba(16,185,129,0.5)] border-t border-white/40 flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3 px-5 rounded-full bg-gradient-to-b from-lime-300 via-emerald-400 to-green-600 hover:brightness-110 active:scale-95 transition-all text-white font-black text-base tracking-wider shadow-[0_6px_16px_rgba(16,185,129,0.45),inset_0_2px_4px_rgba(255,255,255,0.65),inset_0_-3px_5px_rgba(21,128,61,0.45)] border-2 border-white/70 flex items-center justify-center gap-2 cursor-pointer"
           >
             <Play className="w-6 h-6 fill-white" />
-            NEXT LEVEL →
+            NEXT LEVEL
           </button>
 
           <div className="flex items-center gap-3 w-full">
@@ -123,10 +123,10 @@ export const LevelCompleteModal: React.FC = () => {
                   onPageSwitch: () => restartLevel(),
                 });
               }}
-              className="flex-1 py-3 px-4 rounded-2xl bg-slate-800/80 hover:bg-slate-700/90 active:scale-95 transition-all text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer border border-white/15 shadow-md"
+              className="flex-1 py-2.5 px-3 rounded-2xl bg-gradient-to-b from-sky-400 via-blue-500 to-blue-700 hover:brightness-110 active:scale-95 transition-all text-white font-extrabold text-xs flex items-center justify-center gap-2 cursor-pointer border-2 border-white/70 shadow-[0_4px_10px_rgba(16,57,133,0.4),inset_0_2px_4px_rgba(255,255,255,0.55)]"
             >
               <RotateCcw className="w-4 h-4" />
-              Replay
+              Retry
             </button>
 
             <button
@@ -140,7 +140,7 @@ export const LevelCompleteModal: React.FC = () => {
                   onPageSwitch: () => setPhase('menu'),
                 });
               }}
-              className="flex-1 py-3 px-4 rounded-2xl bg-slate-800/80 hover:bg-slate-700/90 active:scale-95 transition-all text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer border border-white/15 shadow-md"
+              className="flex-1 py-2.5 px-3 rounded-2xl bg-gradient-to-b from-violet-400 via-purple-500 to-purple-700 hover:brightness-110 active:scale-95 transition-all text-white font-extrabold text-xs flex items-center justify-center gap-2 cursor-pointer border-2 border-white/70 shadow-[0_4px_10px_rgba(76,29,149,0.4),inset_0_2px_4px_rgba(255,255,255,0.55)]"
             >
               <Home className="w-4 h-4" />
               Menu

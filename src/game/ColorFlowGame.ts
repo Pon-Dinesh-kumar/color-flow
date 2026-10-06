@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CameraManager } from '../engine/CameraManager';
+import { CameraManager, PuzzleBounds } from '../engine/CameraManager';
 import { EnvironmentManager } from '../rendering/Environment';
 import { BoardView } from '../rendering/BoardView';
 import { BallPool } from '../rendering/BallPool';
@@ -128,8 +128,7 @@ export class ColorFlowGame {
 
     if (this.currentLevelConfig) {
       const aspect = width / height;
-      const bounds = this.boardView.getPuzzleBounds();
-      this.cameraManager.framePuzzle(bounds, aspect, false);
+      this.cameraManager.framePuzzle(this.getLevelFrameBounds(), aspect, false);
       this.updateHintScreenPosition();
     } else if (this.heroShowcase) {
       const aspect = width / height;
@@ -137,6 +136,15 @@ export class ColorFlowGame {
       this.cameraManager.framePuzzle(bounds, aspect, false);
     }
   };
+
+  private getLevelFrameBounds(): PuzzleBounds {
+    const bounds = this.boardView.getPuzzleBounds();
+    return {
+      ...bounds,
+      minY: bounds.minY - 0.65,
+      maxY: bounds.maxY + 0.15,
+    };
+  }
 
   private onPointerDown = (e: PointerEvent) => {
     this.pointerDownPos.set(e.clientX, e.clientY);
@@ -197,7 +205,7 @@ export class ColorFlowGame {
     this.environment.updatePlatform(bounds, this.boardView.getTargetCount());
 
     const aspect = this.canvas.clientWidth / Math.max(1, this.canvas.clientHeight);
-    this.cameraManager.framePuzzle(bounds, aspect, true);
+    this.cameraManager.framePuzzle(this.getLevelFrameBounds(), aspect, true);
 
     this.recomputeFlow(currentPipes);
     this.updateHintScreenPosition();
@@ -327,8 +335,10 @@ export class ColorFlowGame {
       this.heroShowcase.update(delta);
     }
 
-    this.ballPool.update(delta);
-    this.particleSystem.update(delta);
+    if (!state.isPaused) {
+      this.ballPool.update(delta);
+      this.particleSystem.update(delta);
+    }
 
     this.renderer.render(this.scene, this.cameraManager.camera);
 
