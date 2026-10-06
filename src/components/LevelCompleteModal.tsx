@@ -3,6 +3,7 @@ import { Star, Play, RotateCcw, Home } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useGameStore } from '../game/gameState';
 import { AudioManager } from '../engine/AudioManager';
+import { CloudTransitionManager } from '../transitions/CloudTransitionManager';
 
 export const LevelCompleteModal: React.FC = () => {
   const {
@@ -96,7 +97,13 @@ export const LevelCompleteModal: React.FC = () => {
           <button
             onClick={() => {
               AudioManager.playButtonClick();
-              nextLevel();
+              CloudTransitionManager.transition({
+                from: 'completed',
+                to: 'gameplay',
+                direction: 'center',
+                theme: 'default',
+                onPageSwitch: () => nextLevel(),
+              });
             }}
             className="w-full py-4 px-6 rounded-full bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 hover:from-emerald-400 hover:to-green-500 active:scale-95 transition-all text-white font-black text-lg tracking-wider shadow-[0_8px_24px_rgba(16,185,129,0.5)] border-t border-white/40 flex items-center justify-center gap-2 cursor-pointer"
           >
@@ -108,7 +115,13 @@ export const LevelCompleteModal: React.FC = () => {
             <button
               onClick={() => {
                 AudioManager.playButtonClick();
-                restartLevel();
+                CloudTransitionManager.transition({
+                  from: 'completed',
+                  to: 'gameplay',
+                  direction: 'center',
+                  theme: 'default',
+                  onPageSwitch: () => restartLevel(),
+                });
               }}
               className="flex-1 py-3 px-4 rounded-2xl bg-slate-800/80 hover:bg-slate-700/90 active:scale-95 transition-all text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer border border-white/15 shadow-md"
             >
@@ -119,7 +132,13 @@ export const LevelCompleteModal: React.FC = () => {
             <button
               onClick={() => {
                 AudioManager.playButtonClick();
-                setPhase('menu');
+                CloudTransitionManager.transition({
+                  from: 'completed',
+                  to: 'home',
+                  direction: 'center',
+                  theme: 'default',
+                  onPageSwitch: () => setPhase('menu'),
+                });
               }}
               className="flex-1 py-3 px-4 rounded-2xl bg-slate-800/80 hover:bg-slate-700/90 active:scale-95 transition-all text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer border border-white/15 shadow-md"
             >

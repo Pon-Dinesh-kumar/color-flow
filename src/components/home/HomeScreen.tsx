@@ -4,6 +4,7 @@ import { GameLogo } from './GameLogo';
 import { PlayButton } from './PlayButton';
 import { HomeNavigation } from './HomeNavigation';
 import { ThemesModal } from '../ThemesModal';
+import { CloudTransitionManager } from '../../transitions/CloudTransitionManager';
 
 export const HomeScreen: React.FC = () => {
   const {
@@ -15,8 +16,48 @@ export const HomeScreen: React.FC = () => {
 
   const [showThemes, setShowThemes] = useState(false);
 
+  // Home → Gameplay
   const handlePlay = () => {
-    loadLevel(currentLevelNumber);
+    CloudTransitionManager.transition({
+      from: 'home',
+      to: 'gameplay',
+      direction: 'center',
+      theme: 'default',
+      onPageSwitch: () => loadLevel(currentLevelNumber),
+    });
+  };
+
+  // Home → Levels
+  const handleOpenLevels = () => {
+    CloudTransitionManager.transition({
+      from: 'home',
+      to: 'levels',
+      direction: 'center',
+      theme: 'default',
+      onPageSwitch: () => setShowLevelSelect(true),
+    });
+  };
+
+  // Home → Settings
+  const handleOpenSettings = () => {
+    CloudTransitionManager.transition({
+      from: 'home',
+      to: 'settings',
+      direction: 'center',
+      theme: 'default',
+      onPageSwitch: () => setShowSettings(true),
+    });
+  };
+
+  // Home → Themes
+  const handleOpenThemes = () => {
+    CloudTransitionManager.transition({
+      from: 'home',
+      to: 'themes',
+      direction: 'center',
+      theme: 'default',
+      onPageSwitch: () => setShowThemes(true),
+    });
   };
 
   return (
@@ -36,9 +77,9 @@ export const HomeScreen: React.FC = () => {
 
         {/* 3 Glass Bottom Actions: Settings, Levels, Themes */}
         <HomeNavigation
-          onOpenSettings={() => setShowSettings(true)}
-          onOpenLevels={() => setShowLevelSelect(true)}
-          onOpenThemes={() => setShowThemes(true)}
+          onOpenSettings={handleOpenSettings}
+          onOpenLevels={handleOpenLevels}
+          onOpenThemes={handleOpenThemes}
         />
       </div>
 

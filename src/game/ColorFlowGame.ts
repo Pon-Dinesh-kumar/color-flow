@@ -12,6 +12,7 @@ import { FlowResult } from '../puzzle/FlowPath';
 import { useGameStore } from './gameState';
 import { RemoteConfigService } from '../services/RemoteConfigService';
 import { HeroShowcaseManager } from '../rendering/HeroShowcaseManager';
+import { AudioManager } from '../engine/AudioManager';
 
 export class ColorFlowGame {
   private canvas: HTMLCanvasElement;
@@ -33,6 +34,7 @@ export class ColorFlowGame {
   // Pointer tracking for tactile tap vs drag
   private pointerDownPos = new THREE.Vector2();
   private pointerDownTime = 0;
+  private resizeObserver: ResizeObserver | null = null;
 
   // Callback to inform UI of tutorial screen coordinates
   public onHintPositionUpdate?: (pos: { x: number; y: number } | null) => void;
@@ -40,13 +42,14 @@ export class ColorFlowGame {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
 
-    // Create high-performance WebGL Renderer
+    // Create high-performance WebGL Renderer with alpha transparency so uncropped background shines through
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
       powerPreference: 'high-performance',
-      alpha: false,
+      alpha: true,
     });
+    this.renderer.setClearColor(0x000000, 0);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -79,6 +82,11 @@ export class ColorFlowGame {
       }
     };
 
+    // Section 10: Trail Effect (Subtle) behind moving balls
+    this.ballPool.onBallStep = (pos, color) => {
+      this.particleSystem.emitTrail(pos, color);
+    };
+
     this.bindEvents();
     this.handleResize();
     this.startLoop();
@@ -87,12 +95,25 @@ export class ColorFlowGame {
   private bindEvents() {
     window.addEventListener('resize', this.handleResize);
 
+    if (this.canvas.parentElement && typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.handleResize();
+      });
+      this.resizeObserver.observe(this.canvas.parentElement);
+    }
+
     this.canvas.addEventListener('pointerdown', this.onPointerDown);
     this.canvas.addEventListener('pointerup', this.onPointerUp);
   }
 
   public unbindEvents() {
     window.removeEventListener('resize', this.handleResize);
+
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
+
     this.canvas.removeEventListener('pointerdown', this.onPointerDown);
     this.canvas.removeEventListener('pointerup', this.onPointerUp);
   }
@@ -100,6 +121,8 @@ export class ColorFlowGame {
   private handleResize = () => {
     const width = this.canvas.parentElement ? this.canvas.parentElement.clientWidth : window.innerWidth;
     const height = this.canvas.parentElement ? this.canvas.parentElement.clientHeight : window.innerHeight;
+
+    if (width === 0 || height === 0) return;
 
     this.renderer.setSize(width, height, false);
 
@@ -242,12 +265,15 @@ export class ColorFlowGame {
 
   public triggerWinCelebration() {
     this.cameraManager.playWinZoom();
+    AudioManager.playBallComplete();
+    this.boardView.emptyAllSources();
     if (this.currentLevelConfig) {
       for (const tgt of this.currentLevelConfig.targets) {
         this.boardView.playTargetWin(tgt.id);
         const tgtMesh = this.scene.getObjectByName(`target_${tgt.id}`);
         if (tgtMesh) {
-          this.particleSystem.burst(tgtMesh.position, tgt.color, 32, 3.6);
+          // Section 10: Completion Burst
+          this.particleSystem.burstCompletion(tgtMesh.position, tgt.color);
         }
       }
     }
@@ -279,7 +305,7 @@ export class ColorFlowGame {
           if (path.reachesTarget && path.targetId) {
             const tgtState = state.targets[path.targetId];
             if (tgtState && !tgtState.isComplete) {
-              this.ballPool.spawnBallOnPath(
+              const spawned = this.ballPool.spawnBallOnPath(
                 path,
                 dims.width,
                 dims.height,
@@ -287,6 +313,9 @@ export class ColorFlowGame {
                 config.ballSpeed,
                 (wp) => this.boardView.getWaypointWorldPosition(wp)
               );
+              if (spawned && path.sourceId) {
+                this.boardView.popSourceBall(path.sourceId);
+              }
             }
           }
         }

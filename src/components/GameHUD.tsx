@@ -2,6 +2,7 @@ import React from 'react';
 import { RotateCcw, Home, Volume2, VolumeX } from 'lucide-react';
 import { useGameStore } from '../game/gameState';
 import { AudioManager } from '../engine/AudioManager';
+import { CloudTransitionManager } from '../transitions/CloudTransitionManager';
 import { GameButton } from './common/GameButton';
 import { LevelPill } from './common/LevelPill';
 import { MovesChip } from './common/MovesChip';
@@ -30,7 +31,13 @@ export const GameHUD: React.FC = () => {
           <GameButton
             onClick={() => {
               AudioManager.playButtonClick();
-              setPhase('menu');
+              CloudTransitionManager.transition({
+                from: 'gameplay',
+                to: 'home',
+                direction: 'center',
+                theme: 'default',
+                onPageSwitch: () => setPhase('menu'),
+              });
             }}
             title="Return to Menu"
           >
@@ -59,7 +66,13 @@ export const GameHUD: React.FC = () => {
           <GameButton
             onClick={() => {
               AudioManager.playButtonClick();
-              restartLevel();
+              CloudTransitionManager.transition({
+                from: 'gameplay',
+                to: 'gameplay',
+                direction: 'center',
+                theme: 'default',
+                onPageSwitch: () => restartLevel(),
+              });
             }}
             title="Restart Level"
           >

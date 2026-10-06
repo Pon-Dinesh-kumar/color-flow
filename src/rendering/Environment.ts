@@ -1,14 +1,11 @@
 import * as THREE from 'three';
-import defaultBackground from '../assets/images/default_bg_1791135886423.png';
 import { MaterialManager } from './Materials';
 import { PuzzleBounds } from '../engine/CameraManager';
 
 export class EnvironmentManager {
   private scene: THREE.Scene;
   private mats = MaterialManager.getInstance();
-  private backgroundMesh: THREE.Mesh | null = null;
   private platformGroup: THREE.Group;
-  private skylineGroup: THREE.Group | null = null;
 
   constructor(scene: THREE.Scene) {
     this.scene = scene;
@@ -58,89 +55,21 @@ export class EnvironmentManager {
   }
 
   private setupBackground() {
-    const planeHeight = 38;
-    const planeWidth = planeHeight * (9 / 16);
-
-    const bgMat = new THREE.MeshBasicMaterial({
-      map: null,
-      depthWrite: false,
-    });
-
-    const bgGeom = new THREE.PlaneGeometry(planeWidth, planeHeight);
-    this.backgroundMesh = new THREE.Mesh(bgGeom, bgMat);
-    this.backgroundMesh.position.set(0, 0.5, -11);
-    this.scene.add(this.backgroundMesh);
-
-    const textureLoader = new THREE.TextureLoader();
-    textureLoader.load(
-      defaultBackground,
-      (loadedTex) => {
-        loadedTex.colorSpace = THREE.SRGBColorSpace;
-        loadedTex.minFilter = THREE.LinearFilter;
-        loadedTex.magFilter = THREE.LinearFilter;
-        bgMat.map = loadedTex;
-        bgMat.needsUpdate = true;
-
-        if (this.skylineGroup) {
-          this.skylineGroup.visible = false;
-        }
-      },
-      undefined,
-      (err) => {
-        console.warn('Could not load default background image:', err);
-      }
-    );
-
-    this.setupSkyline();
+    // The complete uncropped default background is rendered directly on the mobile game
+    // container behind the transparent WebGL canvas. This ensures 100% of the background
+    // is visible with zero cropping across all mobile and desktop viewports, with no distortion
+    // from 3D camera angles or zooms.
   }
 
   public updateBackgroundTexture(urlOrDataUri: string) {
-    const textureLoader = new THREE.TextureLoader();
-    textureLoader.load(
-      urlOrDataUri,
-      (loadedTex) => {
-        loadedTex.colorSpace = THREE.SRGBColorSpace;
-        loadedTex.minFilter = THREE.LinearFilter;
-        loadedTex.magFilter = THREE.LinearFilter;
-        if (this.backgroundMesh) {
-          (this.backgroundMesh.material as THREE.MeshBasicMaterial).map = loadedTex;
-          (this.backgroundMesh.material as THREE.MeshBasicMaterial).needsUpdate = true;
-        }
-        if (this.skylineGroup) {
-          this.skylineGroup.visible = false;
-        }
-      },
-      undefined,
-      (err) => {
-        console.warn('Failed to update background texture:', err);
-      }
-    );
+    // Dynamically updates background URL in game store for instant uncropped display
+    import('../game/gameState').then(({ useGameStore }) => {
+      useGameStore.getState().setBackgroundUrl(urlOrDataUri);
+    });
   }
 
   private setupSkyline() {
-    this.skylineGroup = new THREE.Group();
-    this.skylineGroup.position.set(0, -5, -9);
-
-    const bldgMat = new THREE.MeshBasicMaterial({
-      color: 0xfbcfe8,
-      transparent: true,
-      opacity: 0.16,
-      depthWrite: false,
-    });
-
-    const heights = [4.2, 5.8, 4.6, 7.0, 5.2, 8.2, 6.4, 4.8, 7.2, 4.4, 6.0, 5.0];
-    const spacing = 2.0;
-    const startX = -((heights.length - 1) * spacing) / 2;
-
-    heights.forEach((h, i) => {
-      const w = 1.2 + (i % 3) * 0.35;
-      const geom = new THREE.BoxGeometry(w, h, 0.8);
-      const mesh = new THREE.Mesh(geom, bldgMat);
-      mesh.position.set(startX + i * spacing, h / 2, 0);
-      this.skylineGroup!.add(mesh);
-    });
-
-    this.scene.add(this.skylineGroup);
+    // Omitted in favor of the complete default background art
   }
 
   /**

@@ -67,6 +67,50 @@ export class ParticleSystem {
     }
   }
 
+  // Section 10: Subtle Trail Effect behind moving balls
+  public emitTrail(position: THREE.Vector3, color: FlowColor) {
+    if (this.particles.length >= this.maxParticles - 30) return;
+    const colorDef = COLOR_PALETTE[color] || COLOR_PALETTE.red;
+    const baseColor = new THREE.Color(colorDef.hexNumber);
+
+    this.particles.push({
+      position: position.clone().add(
+        new THREE.Vector3(
+          (Math.random() - 0.5) * 0.03,
+          (Math.random() - 0.5) * 0.03,
+          (Math.random() - 0.5) * 0.02
+        )
+      ),
+      velocity: new THREE.Vector3((Math.random() - 0.5) * 0.1, (Math.random() - 0.5) * 0.1, 0),
+      color: baseColor,
+      size: 0.045,
+      alpha: 0.65,
+      life: 0,
+      maxLife: 0.16,
+    });
+  }
+
+  // Section 10: Completion Burst with colorful droplets and star sparks
+  public burstCompletion(position: THREE.Vector3, color: FlowColor) {
+    this.burst(position, color, 30, 3.4);
+
+    const starColor = new THREE.Color(0xffffff);
+    for (let i = 0; i < 14; i++) {
+      if (this.particles.length >= this.maxParticles) break;
+      const angle = (i / 14) * Math.PI * 2;
+      const speed = 3.6 + Math.random() * 0.8;
+      this.particles.push({
+        position: position.clone(),
+        velocity: new THREE.Vector3(Math.cos(angle) * speed, Math.sin(angle) * speed, 0.3),
+        color: starColor,
+        size: 0.075,
+        alpha: 1.0,
+        life: 0,
+        maxLife: 0.48,
+      });
+    }
+  }
+
   public update(delta: number) {
     const gravity = new THREE.Vector3(0, -5.5, 0);
 

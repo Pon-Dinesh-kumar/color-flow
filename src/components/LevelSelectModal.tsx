@@ -5,17 +5,40 @@ import { LevelLoader } from '../gameplay/LevelLoader';
 import { SaveService } from '../services/SaveService';
 import { AudioManager } from '../engine/AudioManager';
 
+import { CloudTransitionManager } from '../transitions/CloudTransitionManager';
+
 export const LevelSelectModal: React.FC = () => {
   const { loadLevel, setShowLevelSelect } = useGameStore();
 
   const allLevels = LevelLoader.getAllLevels();
   const unlockedLevel = SaveService.getUnlockedLevel();
 
+  // Levels → Gameplay
   const handleSelectLevel = (levelNum: number) => {
     if (levelNum > unlockedLevel) return;
     AudioManager.playButtonClick();
-    loadLevel(levelNum);
-    setShowLevelSelect(false);
+    CloudTransitionManager.transition({
+      from: 'levels',
+      to: 'gameplay',
+      direction: 'center',
+      theme: 'default',
+      onPageSwitch: () => {
+        loadLevel(levelNum);
+        setShowLevelSelect(false);
+      },
+    });
+  };
+
+  // Levels → Home
+  const handleClose = () => {
+    AudioManager.playButtonClick();
+    CloudTransitionManager.transition({
+      from: 'levels',
+      to: 'home',
+      direction: 'center',
+      theme: 'default',
+      onPageSwitch: () => setShowLevelSelect(false),
+    });
   };
 
   return (
@@ -25,10 +48,7 @@ export const LevelSelectModal: React.FC = () => {
         <div className="p-4 px-6 border-b border-white/10 flex items-center justify-between">
           <h3 className="text-xl font-black text-white tracking-wide">Select Level</h3>
           <button
-            onClick={() => {
-              AudioManager.playButtonClick();
-              setShowLevelSelect(false);
-            }}
+            onClick={handleClose}
             className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />

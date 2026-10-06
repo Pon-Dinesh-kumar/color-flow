@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Volume2, VolumeX, Music, Trash2 } from 'lucide-react';
 import { useGameStore } from '../game/gameState';
 import { AudioManager } from '../engine/AudioManager';
+import { CloudTransitionManager } from '../transitions/CloudTransitionManager';
 
 export const SettingsModal: React.FC = () => {
   const {
@@ -13,11 +14,22 @@ export const SettingsModal: React.FC = () => {
     setShowSettings,
   } = useGameStore();
 
+  const handleClose = () => {
+    AudioManager.playButtonClick();
+    CloudTransitionManager.transition({
+      from: 'settings',
+      to: 'home',
+      direction: 'center',
+      theme: 'default',
+      onPageSwitch: () => setShowSettings(false),
+    });
+  };
+
   const handleReset = () => {
     if (confirm('Are you sure you want to reset all game progress?')) {
       AudioManager.playButtonClick();
       resetProgress();
-      setShowSettings(false);
+      handleClose();
     }
   };
 
@@ -28,10 +40,7 @@ export const SettingsModal: React.FC = () => {
         <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4">
           <h3 className="text-xl font-black text-white">Settings</h3>
           <button
-            onClick={() => {
-              AudioManager.playButtonClick();
-              setShowSettings(false);
-            }}
+            onClick={handleClose}
             className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />

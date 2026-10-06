@@ -38,79 +38,6 @@ export class HeroShowcaseManager {
     this.buildShowcase();
   }
 
-  private createRotationIconTexture(): THREE.CanvasTexture {
-    const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d')!;
-
-    // Rich glossy blue rounded square background
-    ctx.fillStyle = '#0284c7';
-    ctx.beginPath();
-    ctx.roundRect(16, 16, 224, 224, 38);
-    ctx.fill();
-
-    // Subtle radial light reflection
-    const radGrad = ctx.createRadialGradient(128, 128, 10, 128, 128, 115);
-    radGrad.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
-    radGrad.addColorStop(1, 'rgba(2, 132, 199, 0.1)');
-    ctx.fillStyle = radGrad;
-    ctx.beginPath();
-    ctx.roundRect(16, 16, 224, 224, 38);
-    ctx.fill();
-
-    // Polished white/cyan border rim
-    ctx.strokeStyle = '#e0f2fe';
-    ctx.lineWidth = 10;
-    ctx.beginPath();
-    ctx.roundRect(16, 16, 224, 224, 38);
-    ctx.stroke();
-
-    // Circular rotation arrows (matching reference 🔄)
-    ctx.strokeStyle = '#ffffff';
-    ctx.fillStyle = '#ffffff';
-    ctx.lineWidth = 15;
-    ctx.lineCap = 'round';
-
-    const cx = 128;
-    const cy = 128;
-    const r = 56;
-
-    // Top arc
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, -Math.PI * 0.82, -Math.PI * 0.1);
-    ctx.stroke();
-
-    // Top arrow head
-    const topX = cx + r * Math.cos(-Math.PI * 0.1);
-    const topY = cy + r * Math.sin(-Math.PI * 0.1);
-    ctx.beginPath();
-    ctx.moveTo(topX - 6, topY - 18);
-    ctx.lineTo(topX + 17, topY);
-    ctx.lineTo(topX - 6, topY + 17);
-    ctx.closePath();
-    ctx.fill();
-
-    // Bottom arc
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, Math.PI * 0.18, Math.PI * 0.9);
-    ctx.stroke();
-
-    // Bottom arrow head
-    const botX = cx + r * Math.cos(Math.PI * 0.9);
-    const botY = cy + r * Math.sin(Math.PI * 0.9);
-    ctx.beginPath();
-    ctx.moveTo(botX + 6, botY + 18);
-    ctx.lineTo(botX - 17, botY);
-    ctx.lineTo(botX + 6, botY - 17);
-    ctx.closePath();
-    ctx.fill();
-
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    return tex;
-  }
-
   private buildShowcase() {
     // 1. Source Containers (Elevated Top-Left & Top-Right)
     this.buildSources();
@@ -146,29 +73,29 @@ export class HeroShowcaseManager {
     glassMeshRed.castShadow = true;
     this.redSourceGroup.add(glassMeshRed);
 
-    // Polished chrome top cap
+    // Glossy candy-red top cap
     const topCapGeom = new THREE.CylinderGeometry(canisterRadius * 1.06, canisterRadius * 1.06, 0.12, 32);
-    const topCapRed = new THREE.Mesh(topCapGeom, this.mats.metalCollarMaterial);
+    const topCapRed = new THREE.Mesh(topCapGeom, this.mats.getToyColorMaterial('red'));
     topCapRed.position.y = canisterHeight / 2 + 0.06;
     topCapRed.castShadow = true;
     this.redSourceGroup.add(topCapRed);
 
     // Glossy Red accent rim ring
     const redAccentGeom = new THREE.TorusGeometry(canisterRadius * 1.04, 0.04, 16, 32);
-    const redAccentMesh = new THREE.Mesh(redAccentGeom, this.mats.getBallMaterial('red'));
+    const redAccentMesh = new THREE.Mesh(redAccentGeom, this.mats.metalAccentMaterial);
     redAccentMesh.rotation.x = Math.PI / 2;
     redAccentMesh.position.y = topCapRed.position.y - 0.05;
     this.redSourceGroup.add(redAccentMesh);
 
-    // Compact polished chrome bottom collar (connecting directly into pipe)
+    // Glossy red bottom funnel collar (connecting directly into pipe)
     const botCollarGeom = new THREE.CylinderGeometry(canisterRadius * 1.04, 0.25, 0.16, 32);
-    const botCollarRed = new THREE.Mesh(botCollarGeom, this.mats.metalCollarMaterial);
+    const botCollarRed = new THREE.Mesh(botCollarGeom, this.mats.getToyColorMaterial('red'));
     botCollarRed.position.y = -canisterHeight / 2 - 0.08;
     botCollarRed.castShadow = true;
     this.redSourceGroup.add(botCollarRed);
 
-    // 5 Glossy Red candy spheres inside source
-    const ballGeom = new THREE.SphereGeometry(0.165, 20, 20);
+    // 5 Glossy Red candy spheres inside source (Section 3: 32x32 UV Sphere)
+    const ballGeom = new THREE.SphereGeometry(0.135, 32, 32);
     const redMat = this.mats.getBallMaterial('red');
     const redSourceOffsets = [
       [0, -0.15, 0],
@@ -194,19 +121,19 @@ export class HeroShowcaseManager {
     glassMeshBlue.castShadow = true;
     this.blueSourceGroup.add(glassMeshBlue);
 
-    const topCapBlue = new THREE.Mesh(topCapGeom, this.mats.metalCollarMaterial);
+    const topCapBlue = new THREE.Mesh(topCapGeom, this.mats.getToyColorMaterial('blue'));
     topCapBlue.position.y = canisterHeight / 2 + 0.06;
     topCapBlue.castShadow = true;
     this.blueSourceGroup.add(topCapBlue);
 
     // Glossy Blue accent rim ring
     const blueAccentGeom = new THREE.TorusGeometry(canisterRadius * 1.04, 0.04, 16, 32);
-    const blueAccentMesh = new THREE.Mesh(blueAccentGeom, this.mats.getBallMaterial('blue'));
+    const blueAccentMesh = new THREE.Mesh(blueAccentGeom, this.mats.metalAccentMaterial);
     blueAccentMesh.rotation.x = Math.PI / 2;
     blueAccentMesh.position.y = topCapBlue.position.y - 0.05;
     this.blueSourceGroup.add(blueAccentMesh);
 
-    const botCollarBlue = new THREE.Mesh(botCollarGeom, this.mats.metalCollarMaterial);
+    const botCollarBlue = new THREE.Mesh(botCollarGeom, this.mats.getToyColorMaterial('blue'));
     botCollarBlue.position.y = -canisterHeight / 2 - 0.08;
     botCollarBlue.castShadow = true;
     this.blueSourceGroup.add(botCollarBlue);
@@ -268,9 +195,9 @@ export class HeroShowcaseManager {
     topCollarMesh.position.y = targetHeight / 2 - 0.04;
     this.redTargetGroup.add(topCollarMesh);
 
-    // Stepped dark metallic pedestal base
+    // Playful candy-red pedestal base
     const baseGeom = new THREE.CylinderGeometry(targetRadius * 1.08, targetRadius * 1.18, 0.16, 32);
-    const baseMesh = new THREE.Mesh(baseGeom, this.mats.metalAccentMaterial);
+    const baseMesh = new THREE.Mesh(baseGeom, this.mats.getToyColorMaterial('red'));
     baseMesh.position.y = -targetHeight / 2 - 0.08;
     baseMesh.castShadow = true;
     baseMesh.receiveShadow = true;
@@ -303,7 +230,7 @@ export class HeroShowcaseManager {
     topCollarMeshBlue.position.y = targetHeight / 2 - 0.04;
     this.blueTargetGroup.add(topCollarMeshBlue);
 
-    const baseMeshBlue = new THREE.Mesh(baseGeom, this.mats.metalAccentMaterial);
+    const baseMeshBlue = new THREE.Mesh(baseGeom, this.mats.getToyColorMaterial('blue'));
     baseMeshBlue.position.y = -targetHeight / 2 - 0.08;
     baseMeshBlue.castShadow = true;
     baseMeshBlue.receiveShadow = true;
@@ -336,18 +263,27 @@ export class HeroShowcaseManager {
     cubeMesh.receiveShadow = true;
     this.valveGroup.add(cubeMesh);
 
-    // Front icon plate with 🔄 symbol
-    const iconTex = this.createRotationIconTexture();
-    const plateGeom = new THREE.PlaneGeometry(valveSize * 0.88, valveSize * 0.88);
-    const plateMat = new THREE.MeshBasicMaterial({
-      map: iconTex,
-      transparent: true,
-    });
-    const plateMesh = new THREE.Mesh(plateGeom, plateMat);
-    plateMesh.position.set(0, 0, valveSize / 2 + 0.005);
-    this.valveGroup.add(plateMesh);
+    // 3D Molded White Central Button Dial (Clean 3D toy part - NO stickers!)
+    const dialBaseGeom = new THREE.CylinderGeometry(0.18, 0.20, 0.06, 28);
+    const dialBase = new THREE.Mesh(dialBaseGeom, this.mats.junctionWhiteMaterial);
+    dialBase.rotation.x = Math.PI / 2;
+    dialBase.position.z = valveSize / 2 + 0.03;
+    this.valveGroup.add(dialBase);
 
-    // Polished chrome collar rings on 4 ports (left, right, bottom-left, bottom-right)
+    // Chrome embossed ring
+    const dialRimGeom = new THREE.TorusGeometry(0.16, 0.02, 16, 28);
+    const dialRim = new THREE.Mesh(dialRimGeom, this.mats.metalAccentMaterial);
+    dialRim.position.z = valveSize / 2 + 0.06;
+    this.valveGroup.add(dialRim);
+
+    // 3D molded inner core sphere
+    const coreGeom = new THREE.SphereGeometry(0.08, 20, 20);
+    const coreMat = this.mats.getBallMaterial('blue');
+    const core = new THREE.Mesh(coreGeom, coreMat);
+    core.position.z = valveSize / 2 + 0.06;
+    this.valveGroup.add(core);
+
+    // Collar rings on 4 ports (left, right, bottom-left, bottom-right)
     const collarGeom = new THREE.CylinderGeometry(0.24, 0.24, 0.08, 24);
     const trimMat = this.mats.metalCollarMaterial;
 
@@ -441,9 +377,15 @@ export class HeroShowcaseManager {
     ];
 
     curves.forEach((curve) => {
-      const geom = new THREE.TubeGeometry(curve, 36, pipeRadius, 20, false);
+      const geom = new THREE.TubeGeometry(curve, 36, pipeRadius, 24, false);
       const tubeMesh = new THREE.Mesh(geom, glassMat);
+      tubeMesh.castShadow = true;
       this.group.add(tubeMesh);
+
+      // Inner refraction contour for high visibility against sky background
+      const contourGeom = new THREE.TubeGeometry(curve, 36, pipeRadius * 0.95, 24, false);
+      const contourMesh = new THREE.Mesh(contourGeom, this.mats.pipeGlassContourMaterial);
+      this.group.add(contourMesh);
 
       // Add chrome collar rings at connection joints
       const startPt = curve.getPoint(0);
@@ -460,11 +402,12 @@ export class HeroShowcaseManager {
   }
 
   /**
-   * Creates juicy candy-like spheres for both flow streams (Red on left, Blue on right).
+   * Creates high-gloss PBR spheres matching the Ball Asset Guide specifications:
+   * Sphere (UV Sphere), 32x32 segments, 0.27 units diameter (0.135 radius), PBR material.
    */
   private buildFlowBalls() {
-    const ballRadius = 0.165;
-    const ballGeom = new THREE.SphereGeometry(ballRadius, 22, 22);
+    const ballRadius = 0.135;
+    const ballGeom = new THREE.SphereGeometry(ballRadius, 32, 32);
 
     const redMat = this.mats.getBallMaterial('red');
     const blueMat = this.mats.getBallMaterial('blue');
@@ -505,7 +448,8 @@ export class HeroShowcaseManager {
   }
 
   public update(delta: number) {
-    this.animTimer += delta * 0.36; // smooth, satisfying flow speed
+    // Section 7: Loop (Home Screen) 4 - 6 seconds
+    this.animTimer += delta * 0.22;
 
     const count = 5;
     const spacing = 0.17;

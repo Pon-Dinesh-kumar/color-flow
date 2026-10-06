@@ -8,6 +8,7 @@ import { posKey } from '../puzzle/Grid';
 import { SaveService } from '../services/SaveService';
 import { AudioManager } from '../engine/AudioManager';
 import { AnalyticsService } from '../services/AnalyticsService';
+import defaultBackground from '../assets/images/default_bg_1791135886423.png';
 
 export type GamePhase = 'menu' | 'playing' | 'completed' | 'failed' | 'editor';
 
@@ -40,6 +41,10 @@ export interface GameState {
   showSettings: boolean;
   showEditor: boolean;
 
+  // Theme & background
+  backgroundUrl: string;
+  setBackgroundUrl: (url: string) => void;
+
   // Actions
   loadLevel: (levelNum: number) => void;
   rotatePipe: (pipeId: string) => void;
@@ -68,6 +73,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   movesUsed: 0,
   starsEarned: 0,
   activeTargetIds: [],
+
+  backgroundUrl: defaultBackground,
+  setBackgroundUrl: (url: string) => set({ backgroundUrl: url }),
 
   sfx: SaveService.getProgress().sfx,
   music: SaveService.getProgress().music,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Check } from 'lucide-react';
 import { AudioManager } from '../engine/AudioManager';
+import { CloudTransitionManager } from '../transitions/CloudTransitionManager';
 
 interface ThemesModalProps {
   isOpen: boolean;
@@ -9,6 +10,17 @@ interface ThemesModalProps {
 
 export const ThemesModal: React.FC<ThemesModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
+
+  const handleClose = () => {
+    AudioManager.playButtonClick();
+    CloudTransitionManager.transition({
+      from: 'themes',
+      to: 'home',
+      direction: 'center',
+      theme: 'default',
+      onPageSwitch: onClose,
+    });
+  };
 
   const themes = [
     { id: 'city_sunset', name: 'Golden Skyline', desc: 'Sunny metropolis at sunset (Default)', active: true, color: 'from-amber-400 to-rose-500' },
@@ -25,10 +37,7 @@ export const ThemesModal: React.FC<ThemesModalProps> = ({ isOpen, onClose }) => 
             Themes
           </h3>
           <button
-            onClick={() => {
-              AudioManager.playButtonClick();
-              onClose();
-            }}
+            onClick={handleClose}
             className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />

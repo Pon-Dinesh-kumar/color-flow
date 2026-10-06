@@ -8,6 +8,7 @@ import { LevelSelectModal } from './components/LevelSelectModal';
 import { SettingsModal } from './components/SettingsModal';
 import { LevelEditorModal } from './components/LevelEditorModal';
 import { TutorialHint } from './components/TutorialHint';
+import { CloudTransitionOverlay } from './transitions/CloudTransitionOverlay';
 
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -26,6 +27,7 @@ export default function App() {
     showEditor,
     loadLevel,
     currentLevelNumber,
+    backgroundUrl,
   } = useGameStore();
 
   // Initialize ColorFlowGame engine once
@@ -82,36 +84,80 @@ export default function App() {
   }, [phase]);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-slate-950 select-none">
-      {/* 3D WebGL Canvas */}
-      <canvas
-        ref={canvasRef}
-        className="game-canvas w-full h-full block cursor-pointer touch-none"
+    <div className="relative w-screen h-screen overflow-hidden bg-slate-950 select-none flex items-center justify-center">
+      {/* Ambient background glow for widescreen/desktop letterboxed viewports */}
+      <div
+        className="absolute inset-0 bg-cover bg-center filter blur-3xl opacity-30 scale-110 pointer-events-none"
+        style={{ backgroundImage: `url(${backgroundUrl})` }}
+        aria-hidden="true"
       />
 
-      {/* Non-intrusive Contextual Tutorial Hint over the pipe */}
-      <TutorialHint
-        screenPos={hintScreenPos}
-        visible={phase === 'playing' && movesUsed === 0 && Boolean(currentLevel?.hintPipePosition)}
-      />
+      {/*
+        Complete Mobile Game Viewport:
+        Preserves the exact aspect ratio (940/1672 = ~9:16) of the mobile background image.
+        Home screen keeps the complete 100% uncropped background.
+        In-game screen zooms in a bit like it was earlier for an up-close immersive feel.
+      */}
+      <div
+        className="relative shadow-[0_0_80px_rgba(0,0,0,0.9)] flex flex-col items-center justify-center overflow-hidden"
+        style={{
+          width: '100%',
+          height: '100%',
+          maxWidth: 'calc(100vh * (940 / 1672))',
+          maxHeight: 'calc(100vw * (1672 / 940))',
+          aspectRatio: '940 / 1672',
+        }}
+      >
+        {/* Dynamic Background Layer:
+            - Home Screen ('menu'): 100% complete, uncropped framing.
+            - In-Game Screen: zoomed in even more (~1.38x) focused on the dais/action area, with smooth transition.
+        */}
+        <div
+          className={`absolute inset-0 pointer-events-none transition-transform duration-700 ease-out will-change-transform ${
+            phase === 'menu' ? 'scale-100 origin-center' : 'scale-[1.38] origin-[50%_62%]'
+          }`}
+          style={{
+            backgroundImage: `url(${backgroundUrl})`,
+            backgroundSize: '100% 100%',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+          aria-hidden="true"
+        />
 
-      {/* Home / Landing Screen */}
-      {phase === 'menu' && <HomeScreen />}
+        {/* 3D WebGL Canvas */}
+        <canvas
+          ref={canvasRef}
+          className="game-canvas absolute inset-0 w-full h-full block cursor-pointer touch-none"
+        />
 
-      {/* In-Game HUD (70-80% screen space dedicated to gameplay) */}
-      {phase === 'playing' && <GameHUD />}
+        {/* Non-intrusive Contextual Tutorial Hint over the pipe */}
+        <TutorialHint
+          screenPos={hintScreenPos}
+          visible={phase === 'playing' && movesUsed === 0 && Boolean(currentLevel?.hintPipePosition)}
+        />
 
-      {/* Level Complete Celebration Modal (floating non-intrusive) */}
-      {phase === 'completed' && <LevelCompleteModal />}
+        {/* Home / Landing Screen */}
+        {phase === 'menu' && <HomeScreen />}
 
-      {/* Level Select Modal */}
-      {showLevelSelect && <LevelSelectModal />}
+        {/* In-Game HUD (70-80% screen space dedicated to gameplay) */}
+        {phase === 'playing' && <GameHUD />}
 
-      {/* Settings Modal */}
-      {showSettings && <SettingsModal />}
+        {/* Level Complete Celebration Modal (floating non-intrusive) */}
+        {phase === 'completed' && <LevelCompleteModal />}
 
-      {/* Built-in Level Editor & Dev Tools */}
-      {showEditor && <LevelEditorModal />}
+        {/* Level Select Modal */}
+        {showLevelSelect && <LevelSelectModal />}
+
+        {/* Settings Modal */}
+        {showSettings && <SettingsModal />}
+
+        {/* Built-in Level Editor & Dev Tools */}
+        {showEditor && <LevelEditorModal />}
+
+        {/* Exact Cloud Page Transition System (Storyboard Stages 2–5) */}
+        <CloudTransitionOverlay />
+      </div>
     </div>
   );
 }
